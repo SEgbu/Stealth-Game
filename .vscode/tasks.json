@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: g++.exe build active file",
+			"command": "C:\\Program Files\\mingw64\\bin\\g++.exe",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				// Path to search include directories
+				// This allows use to use <glad/glad.h> (for example) instead of doing "../include/glad/glad.h" in main.cpp
+				"-I${workspaceFolder}\\include",
+				// Path to search library directories
+				"-L${workspaceFolder}\\lib",
+				"${workspaceFolder}\\src\\*.cpp",
+				"${workspaceFolder}\\src\\glad.c",
+				"-lglfw3dll",
+				"-o",
+				"${workspaceFolder}\\bin\\main.exe"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: \"C:\\Program Files\\mingw64\\bin\\g++.exe\""
+		}
+	]
+}
