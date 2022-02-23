@@ -1,4 +1,5 @@
 #include <iostream>
+#include <math.h>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
@@ -95,8 +96,9 @@ int main(){
     // Fragment Shader
     const char* fragmentShaderCode = "#version 330 core\n"
                                         "out vec4 fragColour;\n"
+                                        "uniform vec4 colour;\n"
                                         "void main(){\n"
-                                        "fragColour = vec4(0.0f, 0.8f, 0.8f, 1.0f);\n"
+                                        "fragColour = colour;\n"
                                         "}\0";
 
     // Initialize the fragment shader object
@@ -150,11 +152,18 @@ int main(){
 
         glUseProgram(shaderProgram); // Start of shader program
         glBindVertexArray(VAO); // Bind VAO for this object
+
+        // Changing the green value of our rectangle
+        float time = glfwGetTime();
+        float greenValue = (sin(time * 2) / 2.0f) + 0.5f;
+        int vertexColourLocation = glGetUniformLocation(shaderProgram, "colour");
+        glUniform4f(vertexColourLocation, 0.0f, greenValue, 0.0f, 1.0f);
         
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
+        // End of rendering commands
 
         glfwSwapBuffers(window); // Swaps front and back buffers
         glfwPollEvents(); // Checks if events are triggered
