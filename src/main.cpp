@@ -42,15 +42,14 @@ int main(){
 
     // Vertex data
     float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
+        // positions         // colors
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top     
     };
     
     unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,   // first triangle
-        1, 2, 3    // second triangle
+        0, 1, 2
     };  
 
     // Creating the element buffer object 
@@ -73,8 +72,11 @@ int main(){
     // Vertex shader
     const char* vertexShaderCode = "#version 330 core\n"
                                     "layout (location = 0) in vec3 aPos;\n"
+                                    "layout (location = 1) in vec3 aColour;\n"
+                                    "out vec3 outColour;\n"
                                     "void main(){\n"
-                                    "gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                                    "gl_Position = vec4(aPos, 1.0);\n"
+                                    "outColour = aColour;\n"
                                     "}\0";
 
     // Creating a vertex shader object
@@ -96,9 +98,9 @@ int main(){
     // Fragment Shader
     const char* fragmentShaderCode = "#version 330 core\n"
                                         "out vec4 fragColour;\n"
-                                        "uniform vec4 colour;\n"
+                                        "in vec3 outColour;\n"
                                         "void main(){\n"
-                                        "fragColour = colour;\n"
+                                        "fragColour = vec4(outColour, 1.0);\n"
                                         "}\0";
 
     // Initialize the fragment shader object
@@ -138,9 +140,13 @@ int main(){
     glDeleteShader(fragmentShader);
     glDeleteShader(vertexShader);
 
-    // Determines vertex attributes should be interpretted by creating the vertex buffer data format and enable attributes.
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); 
+    // Determines vertex attributes should be interpretted by creating the vertex buffer data forma and enable attributes.
+    // Position attributes
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); 
     glEnableVertexAttribArray(0);
+    // Colour attributes
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Render Loop
     while(!glfwWindowShouldClose(window)){
