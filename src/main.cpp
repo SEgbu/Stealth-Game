@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <shader.hpp>
+#define STB_IMAGE_IMPLEMENTATION 
+#include <stb/stb_image.h>
 
 // Window dimensions
 const int SCREEN_WIDTH = 800;
@@ -43,15 +45,43 @@ int main(){
 
     // Vertex data
     float vertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top     
+        // positions          // colors           // texture coords
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     };
-    
+        
     unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 2
+        0, 1, 2, 
+        2, 3, 0
     };  
+
+    // Creating the texture behaviour
+    // Sets wrap mode for each axis
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // Sets colour of border
+    float borderColor[] = {0.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    // Sets filtering mode for the textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When magnifying we use GL_LINEAR
+
+    // Load image
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
+    if (data == nullptr){
+        std::cout << "Failed to load texture, stb error message: " << stbi_failure_reason() << std::endl;
+    }
+
+    // Create texture object
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D); // Using minimap setting set previously
+    stbi_image_free(data); // delete image data
 
     // Creating the element buffer object 
     unsigned int EBO; 
@@ -73,13 +103,16 @@ int main(){
     // Setup shader program
     Shader shaderProgram("shaders/vertex.vs", "shaders/fragment.fs");
 
-    // Determines vertex attributes should be interpretted by creating the vertex buffer data forma and enable attributes.
+    // Show where each attributes is in the vertex data and enable them.
     // Position attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); 
     glEnableVertexAttribArray(0);
     // Colour attributes
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+    // Texture attributes
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // Render Loop
     while(!glfwWindowShouldClose(window)){
@@ -92,13 +125,8 @@ int main(){
         shaderProgram.use(); // Start of shader program
         glBindVertexArray(VAO); // Bind VAO for this object
 
-        // Changing the green value of our rectangle
-        float time = glfwGetTime();
-        float greenValue = (sin(time * 2) / 2.0f) + 0.5f;
-        int vertexColourLocation = glGetUniformLocation(shaderProgram.ID, "colour");
-        glUniform4f(vertexColourLocation, 0.0f, greenValue, 0.0f, 1.0f);
-        
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
