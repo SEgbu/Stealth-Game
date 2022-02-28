@@ -59,20 +59,18 @@ int main(){
 
     // Creating the texture behaviour
     // Sets wrap mode for each axis
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // Sets colour of border
-    float borderColor[] = {0.0f, 1.0f, 1.0f, 1.0f};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // Sets filtering mode for the textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When magnifying we use GL_LINEAR
 
     // Load image
     int width, height, nrChannels;
     unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
-    if (data == nullptr){
-        std::cout << "Failed to load texture, stb error message: " << stbi_failure_reason() << std::endl;
+    stbi_set_flip_vertically_on_load(true);
+    if (!data){
+        std::cout << "Failed to load container.jpg, stb error message: " << stbi_failure_reason() << std::endl;
     }
 
     // Create texture object
@@ -82,6 +80,30 @@ int main(){
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D); // Using minimap setting set previously
     stbi_image_free(data); // delete image data
+    
+    // Load second image
+    data = stbi_load("assets/picture.jpg", &width, &height, &nrChannels, 0);
+    if (!data){
+        std::cout << "Failed to load picture.jpg, stb error message: " << stbi_failure_reason() << std::endl;
+    }
+
+    // Create second texture object
+    unsigned int texture2;
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D); // Using minimap setting set previously
+    
+    // Creating the second texture behaviour
+    // Sets wrap mode for each axis
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Sets filtering mode for the textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When magnifying we use GL_LINEAR
+    
+    stbi_image_free(data); // delete image data
+
 
     // Creating the element buffer object 
     unsigned int EBO; 
@@ -114,19 +136,29 @@ int main(){
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
+    // Setting uniforms
+    shaderProgram.use();
+    shaderProgram.setInt("texture1", 0);
+    shaderProgram.setInt("texture2", 1);
+
     // Render Loop
     while(!glfwWindowShouldClose(window)){
         processInput(window); // Inputs
 
         // Rendering commands
         glClearColor(0.0f, 0.4f, 0.4f, 1.0f); // Set color which clears frame
-        glClear(GL_COLOR_BUFFER_BIT); // Set which buffer bit were clearing (the colour one)
+        glClear(GL_COLOR_BUFFER_BIT); // Set which buffer bit were clearing (the colour one).
 
         shaderProgram.use(); // Start of shader program
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBindVertexArray(VAO); // Bind VAO for this object
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
