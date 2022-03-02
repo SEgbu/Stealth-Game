@@ -62,12 +62,12 @@ int main(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // Sets filtering mode for the textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When magnifying we use GL_LINEAR
 
     // Load image
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
+        unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
     stbi_set_flip_vertically_on_load(true);
     if (!data){
         std::cout << "Failed to load container.jpg, stb error message: " << stbi_failure_reason() << std::endl;
@@ -82,28 +82,19 @@ int main(){
     stbi_image_free(data); // delete image data
     
     // Load second image
-    data = stbi_load("assets/picture.jpg", &width, &height, &nrChannels, 0);
+    data = stbi_load("assets/samurai.png", &width, &height, &nrChannels, 0);
     if (!data){
-        std::cout << "Failed to load picture.jpg, stb error message: " << stbi_failure_reason() << std::endl;
+        std::cout << "Failed to load awesomeface.png, stb error message: " << stbi_failure_reason() << std::endl;
     }
 
     // Create second texture object
     unsigned int texture2;
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D); // Using minimap setting set previously
     
-    // Creating the second texture behaviour
-    // Sets wrap mode for each axis
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // Sets filtering mode for the textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // When minifying we use GL_LINEAR_MINIMAP_LINEAR
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // When magnifying we use GL_LINEAR
-    
     stbi_image_free(data); // delete image data
-
 
     // Creating the element buffer object 
     unsigned int EBO; 
@@ -138,8 +129,8 @@ int main(){
 
     // Setting uniforms
     shaderProgram.use();
-    shaderProgram.setInt("texture1", 0);
-    shaderProgram.setInt("texture2", 1);
+    shaderProgram.setInt("myTexture", 0);
+    shaderProgram.setInt("myTexture2", 1);
 
     // Render Loop
     while(!glfwWindowShouldClose(window)){
