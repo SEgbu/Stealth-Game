@@ -1,10 +1,22 @@
+// Predefined C++ Headers
 #include <iostream>
 #include <math.h>
+
+// GLAD and GLFW Headers
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
+
+// Shader class
 #include <shader.hpp>
+
+// STB Image Loader Headers
 #define STB_IMAGE_IMPLEMENTATION 
 #include <stb/stb_image.h>
+
+// OpenGL Mathematics Headers
+#include <glm/glm/glm.hpp>
+#include <glm/glm/gtc/matrix_transform.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
 
 // Window dimensions
 const int SCREEN_WIDTH = 800;
@@ -127,10 +139,11 @@ int main(){
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // Setting uniforms
+    // Setting texture uniforms
     shaderProgram.use();
     shaderProgram.setInt("myTexture", 0);
     shaderProgram.setInt("myTexture2", 1);
+
 
     // Render Loop
     while(!glfwWindowShouldClose(window)){
@@ -151,6 +164,17 @@ int main(){
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        
+        // Transfomration
+        glm::mat4 trans = glm::mat4(1.0f);
+
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(1.2f, 0.4f, 1.4f));
+
+        // Setting transformation uniform
+        unsigned int transformLoc = 0;
+        transformLoc = glGetUniformLocation(shaderProgram.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         glBindVertexArray(0);
         // End of rendering commands
