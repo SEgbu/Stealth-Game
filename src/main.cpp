@@ -57,11 +57,47 @@ int main(){
 
     // Vertex data
     float vertices[] = {
-        // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
         
     unsigned int indices[] = {  // note that we start from 0!
@@ -79,7 +115,7 @@ int main(){
 
     // Load image
     int width, height, nrChannels;
-        unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
     stbi_set_flip_vertically_on_load(true);
     if (!data){
         std::cout << "Failed to load container.jpg, stb error message: " << stbi_failure_reason() << std::endl;
@@ -130,19 +166,29 @@ int main(){
 
     // Show where each attributes is in the vertex data and enable them.
     // Position attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); 
     glEnableVertexAttribArray(0);
-    // Colour attributes
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
     // Texture attributes
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Setting texture uniforms
     shaderProgram.use();
     shaderProgram.setInt("myTexture", 0);
     shaderProgram.setInt("myTexture2", 1);
+
+    // Random cube positions 
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
+    };
 
 
     // Render Loop
@@ -150,8 +196,9 @@ int main(){
         processInput(window); // Inputs
 
         // Rendering commands
+        glEnable(GL_DEPTH_TEST); // Enable depth
         glClearColor(0.0f, 0.4f, 0.4f, 1.0f); // Set color which clears frame
-        glClear(GL_COLOR_BUFFER_BIT); // Set which buffer bit were clearing (the colour one).
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Set which buffer bit were clearing and for depth.
 
         shaderProgram.use(); // Start of shader program
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -163,18 +210,40 @@ int main(){
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         
-        // Transfomration
-        glm::mat4 trans = glm::mat4(1.0f);
+        // Model matrix - responsible for transforming, scaling and/or rotations 
+        for (unsigned int i = 0; i < 9; i++){
+            // Randomly set transform for each cube
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            
+            // Randomly set angle of each cube
+            float angle = 20.0f * i;
+            model = glm::rotate(model, (float)(glm::radians(angle) * glfwGetTime()), glm::vec3(1.0f, 0.3f, 0.5f));
+            
+            // Set Model matrix uniform
+            int modelLoc = 0;
+            modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 1.0f));
-        trans = glm::scale(trans, glm::vec3(1.2f, 0.4f, 1.4f));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
-        // Setting transformation uniform
-        unsigned int transformLoc = 0;
-        transformLoc = glGetUniformLocation(shaderProgram.ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        // View matrix - acts as a camera
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+        // Projection matrix - changes the perspective 
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.1f, 100.0f);
+        // Set View matrix uniform
+        int viewLoc = 0;
+        viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        // Set projection matrix uniform
+        int projectionLoc = 0;
+        projectionLoc = glGetUniformLocation(shaderProgram.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(0);
         // End of rendering commands
