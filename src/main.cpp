@@ -57,24 +57,17 @@ int main(){
 
     // Vertex data
     float vertices[] = {
-        // positions          // colour 
-        -0.5f, 0.5f, 0.0f,    0.0f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.0f,     0.0f, 0.0f, 0.0f, 
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.0f
+        // positions        // tex coords  
+        -0.25f, 0.5f, 0.0f,  0.0f, 1.0f,  // top left
+        0.25f, 0.5f, 0.0f,   1.0f, 1.0f,  // top right   
+        -0.25f, -0.5f, 0.0f, 0.0f, 0.0f,  // bottom left
+        0.25f, -0.5f, 0.0f,  1.0f, 0.0f   // bottom right   
     };
         
     unsigned int indices[] = {  // note that we start from 0!
-        0, 3, 1,
-        0, 3, 2
+        0, 3, 2,
+        0, 3, 1
     };  
-
-
-    // Creating the element buffer object 
-    unsigned int EBO; 
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Creating the vertex array object
     unsigned int VAO;
@@ -87,35 +80,79 @@ int main(){
     glBindBuffer(GL_ARRAY_BUFFER, VBO); // Binds to GL_ARRAY_BUFFER on OpenGL context
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // Initializing vertex buffer
 
+
+    // Creating the texture object 
+    unsigned int textureID; // Create the texture object ID 
+    glGenTextures(1, &textureID); // Generate object using ID
+    glBindTexture(GL_TEXTURE_2D, textureID); // Allow object to use a subset of the OpenGL context
+
+    // Creating texture behaviour
+    // Sets wrap mode for each texture axis
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set the colour of the border
+    float borderColour[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColour);
+    // Set the filtering modes for the textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    // Load the image
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);  
+    unsigned char* data = stbi_load("assets/player.png", &width, &height, &nrChannels, 0);
+    if (data == nullptr){
+        std::cout << "Failed to load the image, STBI error function: " << stbi_failure_reason() << std::endl;
+    }    
+    // Put the image onto the texture
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data); 
+    glGenerateMipmap(GL_TEXTURE_2D); // Generate minimap
+
+    stbi_image_free(data); // Delete data since I don't need it anymore
+
+    // Creating the element buffer object 
+    unsigned int EBO; 
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     // Setup shader program
     Shader shaderProgram("shaders/vertex.vs", "shaders/fragment.fs");
 
     // Setup Vertex buffer pointer
     // Position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // Colour
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    // Tex Coords
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
 
     // Render Loop
     while(!glfwWindowShouldClose(window)){
         processInput(window); // Inputs
 
         // Rendering commands
+        glEnable(GL_BLEND);
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(0.0f, 0.4f, 0.4f, 1.0f); // Set color which clears frame
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // Set color which clears frame
 
-        shaderProgram.use(); // Start of shader program
         glBindVertexArray(VAO); // Bind VAO for this object
+       
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+       
+        shaderProgram.use(); // Start of shader program
+        shaderProgram.setInt("myTexture", 0);
 
-        // Draw triangles
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(VAO);
 
-        glBindVertexArray(0);
-        // End of rendering commands
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // Draw triangles
+
+        glBindVertexArray(0); 
+        // End of rendering commanwds
 
         glfwSwapBuffers(window); // Swaps front and back buffers
         glfwPollEvents(); // Checks if events are triggered
