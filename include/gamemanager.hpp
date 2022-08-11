@@ -1,5 +1,8 @@
 #pragma once
 
+#include <spriterenderer.hpp>
+#include <resourcemanager.hpp>
+
 // represent the states of the game
 enum GameState {
     GAME_ACTIVE, 
