@@ -1,6 +1,6 @@
 #include <spriterenderer.hpp>
 
-SpriteRenderer::SpriteRenderer(Shader &shader){
+SpriteRenderer::SpriteRenderer(Shader& shader){
     this->shader = shader;
     this->initRenderData();
 }
@@ -37,7 +37,7 @@ void SpriteRenderer::initRenderData(){
     glBindVertexArray(0);
 }
 
-void SpriteRenderer::drawSprite(Texture2D &texture, glm::vec2 position, glm::vec2 size, float rotate, glm::vec3 colour){
+void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 position, glm::vec2 size, float rotate, glm::vec3 colour){
     this->shader.use(); // set shader active
     // order of matrix multiplication: scale, rotate and translate (in code, do it in reverse order)
     glm::mat4 model = glm::mat4(1.0f); // a matrix used to transform the object
@@ -52,10 +52,13 @@ void SpriteRenderer::drawSprite(Texture2D &texture, glm::vec2 position, glm::vec
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, false, glm::value_ptr(model));
     glUniform3fv(glGetUniformLocation(shader.ID, "spriteColour"), 1, glm::value_ptr(colour));
 
-    glActiveTexture(GL_TEXTURE0);
-    texture.bind();
+
 
     glBindVertexArray(VAO);
+
+    glActiveTexture(GL_TEXTURE0);
+    texture.bind();
+    
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }

@@ -13,7 +13,8 @@ class GameManager{
     public: 
         GameState state; // game state
         bool keys[1024]; 
-        GameManager(); // constructor
+        unsigned int width, height;
+        GameManager(unsigned w, unsigned h); // constructor
         ~GameManager(); // destructor
         void init(); // initializer 
         // game loop

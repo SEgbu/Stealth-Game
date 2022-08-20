@@ -1,10 +1,12 @@
 #include <resourcemanager.hpp>
+#include <fileloader.hpp>
 
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
-#include "stb_image.h"
+
+#include <stb/stb_image.h>
 
 // instatiate static variables
 std::map<std::string, Shader> ResourceManager::shaders;
@@ -15,7 +17,7 @@ Shader ResourceManager::loadShader(const char* vShaderFile, const char* fShaderF
     return shaders[name]; 
 }
 
-Shader ResourceManager::getShader(std::string name){
+Shader& ResourceManager::getShader(std::string name){
     return shaders[name];
 }
 
@@ -24,7 +26,7 @@ Texture2D ResourceManager::loadTexture(const char* file, bool alpha, std::string
     return textures[name];
 }
 
-Texture2D ResourceManager::getTexture(std::string name){
+Texture2D& ResourceManager::getTexture(std::string name){
     return textures[name];
 }
 
@@ -39,7 +41,7 @@ void ResourceManager::clear(){
     }
 }
 
-Shader ResourceManager::loadShaderFromFile(const char* vShaderFile, const char* fShaderFile, const char* gShaderFile = nullptr){
+Shader ResourceManager::loadShaderFromFile(const char* vShaderFile, const char* fShaderFile, const char* gShaderFile){
     // get vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;
@@ -79,6 +81,7 @@ Shader ResourceManager::loadShaderFromFile(const char* vShaderFile, const char* 
     // create shader object from source code
     Shader shader;
     shader.compile(vShaderCode, fShaderCode, gShaderFile != nullptr ? gShaderCode : nullptr);
+
     return shader;
 }
 
@@ -89,14 +92,18 @@ Texture2D ResourceManager::loadTextureFromFile(const char *file, bool alpha)
     if (alpha)
     {
         texture.internalFormat = GL_RGBA;
-        texture.imageFormat = GL_RGBA;
+        texture.imageFormat = GL_RGBA; 
     }
-    // load image
+
+    // load image 
     int width, height, nrChannels;
-    unsigned char* data = stbi_load(file, &width, &height, &nrChannels, 0);
+    unsigned char* data = imageLoader(file, &width, &height, &nrChannels);
+
     // now generate texture
     texture.generate(width, height, data);
+
     // and finally free image data
     stbi_image_free(data);
+    
     return texture;
 }

@@ -19,13 +19,13 @@ class ResourceManager{
         static std::map<std::string, Shader> shaders;
         static std::map<std::string, Texture2D> textures;
         // loading vertex, fragment (and geometry) shaders
-        static Shader loadShader(const char* vShadwerFile, const char* fShaderFile, const char* gShaderFile, std::string name);
+        static Shader loadShader(const char* vShaderFile, const char* fShaderFile, const char* gShaderFile, std::string name);
         // get stored shader
-        static Shader getShader(std::string name);
+        static Shader& getShader(std::string name);
         // loading texture
         static Texture2D loadTexture(const char* file, bool alpha, std::string name);
         // get stored texture
-        static Texture2D getTexture(std::string name);
+        static Texture2D& getTexture(std::string name);
         // deallocates resources
         static void clear();
     private: 

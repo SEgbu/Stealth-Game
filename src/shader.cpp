@@ -9,7 +9,7 @@ Shader &Shader::use()
 }
 
 void Shader::compile(const char* vertexSource, const char* fragmentSource, const char* geometrySource)
-{
+{   
     unsigned int sVertex, sFragment, gShader;
     // vertex Shader
     sVertex = glCreateShader(GL_VERTEX_SHADER);
@@ -31,8 +31,8 @@ void Shader::compile(const char* vertexSource, const char* fragmentSource, const
     }
     // shader program
     this->ID = glCreateProgram();
-    glAttachShader(this->ID, sVertex);
     glAttachShader(this->ID, sFragment);
+    glAttachShader(this->ID, sVertex);
     if (geometrySource != nullptr)
         glAttachShader(this->ID, gShader);
     glLinkProgram(this->ID);
