@@ -1,18 +1,19 @@
 #pragma once 
+
 #include <glad/glad.h>
 
-class Texture2D {
+class Texture2D{
     public:
-        unsigned int wrapS, wrapT; // wrapping mode dimensions
+        unsigned int wrapS, wrapT; // wrap modes on dimensions
         unsigned int internalFormat, imageFormat; // texture and image format
         unsigned int filterMin, filterMag; // filtering modes
-        // constructor
+        // constructor 
         Texture2D();
-        // generate the texture 
+        // make the texture
         void generate(unsigned int w, unsigned int h, unsigned char* data);
-        // bind the texture to the OpenGL context
-        void bind() const;
-        // getters 
-        unsigned int ID; // used to access the OpenGL context
-        unsigned int width, height; // dimensions of the texture
+        // update the OpenGL context
+        void bind() const; 
+        // getters
+        unsigned int ID;
+        unsigned int width, height;      
 };

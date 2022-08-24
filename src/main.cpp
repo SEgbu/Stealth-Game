@@ -7,8 +7,8 @@
 #include <glfw/glfw3.h>
 
 // Classes
-#include <gamemanager.hpp>
-#include <resourcemanager.hpp>
+#include <game.hpp>
+#include <resources.hpp>
 
 // STB Image Loader Headers
 #define STB_IMAGE_IMPLEMENTATION 
@@ -58,8 +58,6 @@ int main(){
     // Set the change in the window size to GLFW
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     
-    glEnable(GL_BLEND);
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
@@ -75,6 +73,9 @@ int main(){
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        glEnable(GL_BLEND);
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        
         game.processInputs(deltaTime);
         game.update(deltaTime);
 
