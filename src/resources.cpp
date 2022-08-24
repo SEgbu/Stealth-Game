@@ -7,12 +7,12 @@ std::map<std::string, Shader> ResourceManager::shaders;
 std::map<std::string, Texture2D> ResourceManager::textures;
 
 Shader ResourceManager::loadShader(const char* vShaderFilePath, const char* fShaderFilePath, std::string name){
-    shaders[name] = loadShaderFromFile(vShaderFilePath, fShaderFilePath);
+    shaders[name] = loadShaderFromFile(vShaderFilePath, fShaderFilePath); // create shader program for specific object
     return shaders[name];
 }
 
 Texture2D ResourceManager::loadTexture(const char* texFilePath, bool isTexAlpha, std::string name){
-    textures[name] = loadTextureFromFile(texFilePath, isTexAlpha);
+    textures[name] = loadTextureFromFile(texFilePath, isTexAlpha); // create texture for specific object
     return textures[name];
 }
 
@@ -25,30 +25,40 @@ Texture2D& ResourceManager::getTexture(std::string name){
 }
 
 Shader ResourceManager::loadShaderFromFile(const char* vShaderFilePath, const char* fShaderFilePath){
+    // shader source code in string format
     std::string vertexShaderStr;
     std::string fragShaderStr;
 
+    // exception handling 
     try {
+        // taking in shader files for reading 
         std::ifstream vertexShaderFile(vShaderFilePath);
         std::ifstream fragShaderFile(fShaderFilePath);
-        std::stringstream vertexShaderBuffer, fragShaderBuffer;
+        // initializing shader streams (a flow of data coming in and out of a piece of memory).
+        std::stringstream vertexShaderStream, fragShaderStream; 
 
-        vertexShaderBuffer << vertexShaderFile.rdbuf();
-        fragShaderBuffer << fragShaderFile.rdbuf();
+        // putting shader file buffers onto shader string streams
+        vertexShaderStream << vertexShaderFile.rdbuf();
+        fragShaderStream << fragShaderFile.rdbuf();
 
+        // i don't need these files anymore
         vertexShaderFile.close();
         fragShaderFile.close();
 
-        vertexShaderStr = vertexShaderBuffer.str();
-        fragShaderStr = fragShaderBuffer.str();
+        // getting source code strings from the string stream.
+        vertexShaderStr = vertexShaderStream.str();
+        fragShaderStr = fragShaderStream.str();
     }
+    // if an exception is detected then print out an error on the error stream
     catch (std::exception e){
-        std::cout << "Failed to load shader from file" << std::endl;
+        std::cerr << "Failed to load shader from file" << std::endl;
     }
 
+    // convert the string to const character pointers (the format which OpenGL likes)
     const char* vertexShaderCode = vertexShaderStr.c_str();
     const char* fragShaderCode = fragShaderStr.c_str();
 
+    // compile shaders
     Shader shader;
     shader.compile(vertexShaderCode, fragShaderCode);
 
@@ -56,26 +66,32 @@ Shader ResourceManager::loadShaderFromFile(const char* vShaderFilePath, const ch
 }
 
 Texture2D ResourceManager::loadTextureFromFile(const char* texFilePath, bool isTexAlpha){
-    Texture2D texture;
+    Texture2D texture; // final texture
 
+    // checks if it is a png (has transparency)
     if (isTexAlpha){
+        // if so, change the formats to RGBA
         texture.internalFormat = GL_RGBA;
         texture.imageFormat = GL_RGBA;
     }
 
+    // loading the image data
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texFilePath, &width, &height, &nrChannels, STBI_rgb_alpha);
     if (data == nullptr){
         std::cout << "Failed to load image, stbi error function: " << stbi_failure_reason() << std::endl;
     }
 
+    // generating the texture
     texture.generate(width, height, data);
 
+    // i don't need the image data anymore so deallocate it in memory
     stbi_image_free(data);
 
     return texture;
 }
 
+// properly deallocating shader and texture maps
 void ResourceManager::clear(){
     for (auto iter : shaders){
         glDeleteProgram(iter.second.ID);

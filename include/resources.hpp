@@ -1,10 +1,12 @@
 #pragma once 
 
+// C++ built-in libraries
 #include <map>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
+// Local libraries
 #include <shader.hpp>
 #include <texture2D.hpp>
 

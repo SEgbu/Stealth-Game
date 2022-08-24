@@ -13,9 +13,9 @@
 
 class Shader{
     public: 
-        unsigned int ID;
+        unsigned int ID; // id for OpenGL shader object creation 
 
-        Shader(){};
+        Shader(){}; // constructor
         Shader &use(); // set shaders active
         void compile(const char *vertexSource, const char* fragmentSource); // compile v & f shader
         void checkCompileErrors(unsigned int obj, std::string type); // error checking for shader compilation

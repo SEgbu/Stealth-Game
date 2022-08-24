@@ -1,5 +1,6 @@
 #include <shader.hpp>
 
+// set shader activve
 Shader &Shader::use(){
     glUseProgram(this->ID);
     return *this;
@@ -37,22 +38,33 @@ void Shader::checkCompileErrors(unsigned int obj, std::string type){
     int success; // success boolean
     char infoLog[1024]; // info about the error  
 
+    // if not a shader program
     if (type != "program"){
+        // see how the compilation went
         glGetShaderiv(obj, GL_COMPILE_STATUS, &success);
+        // and if not successful
         if (!success){
+            // find out why it is not successful
             glGetShaderInfoLog(obj, 1024, NULL, infoLog);
             std::cerr << "Error: Shader Compilation\nError Type: " << type << "\nGLAD error: " << infoLog << "\n" << std::endl;
         }
     } 
+    // if it is a shader program
     else{
+        // see how the linking of shaders went
         glGetProgramiv(obj, GL_LINK_STATUS, &success);
+        // and if not successful
         if (!success){
+            // find out why
             glGetProgramInfoLog(obj, 1024, NULL, infoLog);
             std::cerr << "Error: Program Linkage\nError Type: " << type << "\nGLAD error: " << infoLog << "\n" << std::endl; 
         }
     }
 }
 
+// from here downwards all functions...
+// ...check if shader is active
+// ...set a value to a uniform in one of the shaders
 
 void Shader::setFloat(const char *name, float value, bool useShader)
 {
