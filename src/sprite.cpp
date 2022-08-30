@@ -45,7 +45,7 @@ void SpriteRenderer::initRenderData(){
 }
 
 
-void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 size, glm::vec2 position, float rotate, glm::vec3 colour){
+void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 position, glm::vec2 size, float rotate, glm::vec3 colour){
     this->shader.use(); // set shader active
 
     // set model matrix to an identity matrix
@@ -70,7 +70,7 @@ void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 size, glm::vec2 po
     glActiveTexture(GL_TEXTURE0);
     texture.bind();
     
-    // draw triangles (the sprite) on the screem
+    // draw triangles (the sprite) on the screen
     glBindVertexArray(this->VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);

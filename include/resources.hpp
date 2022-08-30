@@ -20,12 +20,12 @@ class ResourceManager{
         // loading vertex, fragment shaders
         static Shader loadShader(const char* vShaderFilePath, const char* fShaderFilePath, std::string name);
         // get shader
-        static Shader& getShader(std::string name);
+        static Shader getShader(std::string name);
 
         // loading texture
         static Texture2D loadTexture(const char* texFilePath, bool isTexAlpha, std::string name);
         // get texture
-        static Texture2D& getTexture(std::string name);
+        static Texture2D getTexture(std::string name);
 
         // deallocates resources properly
         static void clear();

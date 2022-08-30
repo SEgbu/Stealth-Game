@@ -16,11 +16,11 @@ Texture2D ResourceManager::loadTexture(const char* texFilePath, bool isTexAlpha,
     return textures[name];
 }
 
-Shader& ResourceManager::getShader(std::string name){
+Shader ResourceManager::getShader(std::string name){
     return shaders[name];
 }
 
-Texture2D& ResourceManager::getTexture(std::string name){
+Texture2D ResourceManager::getTexture(std::string name){
     return textures[name];
 }
 
@@ -78,6 +78,7 @@ Texture2D ResourceManager::loadTextureFromFile(const char* texFilePath, bool isT
     // loading the image data
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texFilePath, &width, &height, &nrChannels, STBI_rgb_alpha);
+    std::cout << texFilePath << " ";
     if (data == nullptr){
         std::cout << "Failed to load image, stbi error function: " << stbi_failure_reason() << std::endl;
     }

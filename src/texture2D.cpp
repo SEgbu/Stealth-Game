@@ -1,7 +1,10 @@
 #include <texture2D.hpp>
+#include <iostream>
 
-Texture2D::Texture2D() : width(0), height(0), internalFormat(GL_RGBA), imageFormat(GL_RGBA),
+Texture2D::Texture2D() : width(0), height(0), internalFormat(GL_RGB), imageFormat(GL_RGB),
                          wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_NEAREST), filterMag(GL_NEAREST){
+    // set up texture ID
+    glGenTextures(1, &this->ID);
 }
 
 void Texture2D::generate(unsigned int w, unsigned int h, unsigned char* data){

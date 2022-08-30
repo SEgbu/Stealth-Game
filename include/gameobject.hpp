@@ -2,7 +2,7 @@
 
 // OpenGL Libraries
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+#include <glm/glm/glm.hpp>
 
 // Local Libraries
 #include <texture2D.hpp>
@@ -22,7 +22,6 @@ class GameObject {
         GameObject();
         GameObject(glm::vec2 pos, glm::vec2 s, Texture2D spr, glm::vec3 col = glm::vec3(1.0f), 
                    glm::vec2 vel = glm::vec2(0.0f, 0.0f));
-        
         // draw sprite 
         virtual void draw(SpriteRenderer &renderer);
 };

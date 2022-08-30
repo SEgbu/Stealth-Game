@@ -114,7 +114,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     // if key pressed is with the range of keys used in the game manager then it is valid
     if (key >= 0 && key < 1024){
         // if key within that range is pressed set key flag to true
-        if (action = GLFW_PRESS){
+        if (action == GLFW_PRESS){
             stealth.keys[key] = true;
         }
         else if (action == GLFW_RELEASE){
