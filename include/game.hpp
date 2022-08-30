@@ -8,6 +8,9 @@
 // GLFW library
 #include <glfw/glfw3.h>
 
+// Box2D library
+#include <box2d-main/include/box2d/box2d.h>
+
 // Game Scenes 
 enum GameState{
     GAME_ACTIVE, 
