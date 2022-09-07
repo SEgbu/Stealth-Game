@@ -13,7 +13,7 @@
 // static singleton class
 class ResourceManager{
     public:
-        // resource storage
+        // resource storage hash maps
         static std::map<std::string, Shader> shaders;
         static std::map<std::string, Texture2D> textures;
 

@@ -9,7 +9,8 @@
 #include <glfw/glfw3.h>
 
 // Box2D library
-#include <box2d-main/include/box2d/box2d.h>
+#include <box2d/box2d.h>
+#include <box2d/b2_world.h>
 
 // Game Scenes 
 enum GameState{
@@ -18,7 +19,7 @@ enum GameState{
 };
 
 // Player constants 
-const float PLAYER_VELOCITY = 150.0f;
+const float PLAYER_VELOCITY = 10.0f;
 
 class GameManager{
     public: 

@@ -78,7 +78,6 @@ Texture2D ResourceManager::loadTextureFromFile(const char* texFilePath, bool isT
     // loading the image data
     int width, height, nrChannels;
     unsigned char* data = stbi_load(texFilePath, &width, &height, &nrChannels, STBI_rgb_alpha);
-    std::cout << texFilePath << " ";
     if (data == nullptr){
         std::cout << "Failed to load image, stbi error function: " << stbi_failure_reason() << std::endl;
     }

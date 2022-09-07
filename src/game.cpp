@@ -42,41 +42,63 @@ void GameManager::init(){
     // creating the player
     player = new GameObject(glm::vec2(75.0f, 100.0f), glm::vec2(25.0f, 50.0f), ResourceManager::getTexture("player"));
 
+    // creating player physics
+    player->initPhysicBody(true, 10.0f, 0.0f);
+
     // creating the ground
-    ground = new GameObject(glm::vec2(30.0f, 300.0f), glm::vec2(300.f, 100.0f), ResourceManager::getTexture("ground"));
+    ground = new GameObject(glm::vec2(375.0f, 600.0f), glm::vec2(700.f, 100.0f), ResourceManager::getTexture("ground"));
+
+    // creating ground physics
+    ground->initPhysicBody(false);
+
+    // ground box collider position debug
+    std::cout << ground->physicsBody->GetPosition().x << "," << ground->physicsBody->GetPosition().y << std::endl;
 }
 
 void GameManager::update(float deltaTime){
+    // physics process per second
+    float timeStep = 1.0f / 60.0f;
 
+    /* the amount of iterations Box2D will do to 
+    maintain the constraints on the physics body 
+    in a single time step*/
+    int32 velIterations = 6;
+    int32 posIterations = 2;
+
+    // execute the physics process for all physics objects
+    player->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
+    ground->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
 }
 
 void GameManager::processInputs(float deltaTime){
     // when the game scene is on game active
     if (this->state == GAME_ACTIVE){
-        // set velocity to the player velocity
-        float velocity = PLAYER_VELOCITY * deltaTime;
+        // helps me to only apply a force to the x axis
+        float playerYVel = player->physicsBody->GetLinearVelocity().y;
+
         // if a or left is pressed
         if ((this->keys[GLFW_KEY_A] || this->keys[GLFW_KEY_LEFT])){
-            // when the player is within screen bounds
-            if (player->position.x >= 0.0f){
-                // move the player to the left 
-                player->position.x -= velocity;
-            }
+            // apply impulse force in the left direction
+            player->physicsBody->ApplyLinearImpulse(b2Vec2(-PLAYER_VELOCITY, 0), player->physicsBody->GetWorldCenter(), true);
         }
-        
         // if d or right is pressed
-        if ((this->keys[GLFW_KEY_D] || this->keys[GLFW_KEY_RIGHT])){
-            // when the player is within screen bounds
-            if (player->position.x <= width - player->size.x){
-                // move the player to the right
-                player->position.x += velocity;
-            }
+        else if ((this->keys[GLFW_KEY_D] || this->keys[GLFW_KEY_RIGHT])){
+            // apply impulse force in right direction
+            player->physicsBody->ApplyLinearImpulse(b2Vec2(PLAYER_VELOCITY, 0), player->physicsBody->GetWorldCenter(), true);
+        }
+        else{
+            // stop the player horizontally
+            player->physicsBody->SetLinearVelocity(b2Vec2(0, playerYVel));
+        }
+
+        // if w is pressed and player's y velocity = 0
+        if (this->keys[GLFW_KEY_W] && (playerYVel <= 0.00001) ){
+            player->physicsBody->ApplyLinearImpulse(b2Vec2(0, 30.0f), player->physicsBody->GetLinearVelocity(), true);
         }
     }
 }
 
 void GameManager::render(){
-
     // render ground
     ground->draw(*renderer);
     // render player

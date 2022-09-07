@@ -13,8 +13,14 @@
 				"-I${workspaceFolder}\\include",
 				// Path to search library directories
 				"-L${workspaceFolder}\\lib",
+				// Source files
 				"${workspaceFolder}\\src\\*.cpp",
 				"${workspaceFolder}\\src\\glad.c",
+				"${workspaceFolder}\\src\\box2d_src\\collision\\*.cpp",
+				"${workspaceFolder}\\src\\box2d_src\\common\\*.cpp",
+				"${workspaceFolder}\\src\\box2d_src\\dynamics\\*.cpp",
+				"${workspaceFolder}\\src\\box2d_src\\rope\\*.cpp",
+				// Other commands
 				"-lglfw3dll",
 				"-o",
 				"${workspaceFolder}\\main.exe"
