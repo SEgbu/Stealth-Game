@@ -50,9 +50,6 @@ void GameManager::init(){
 
     // creating ground physics
     ground->initPhysicBody(false);
-
-    // ground box collider position debug
-    std::cout << ground->physicsBody->GetPosition().x << "," << ground->physicsBody->GetPosition().y << std::endl;
 }
 
 void GameManager::update(float deltaTime){
@@ -71,6 +68,23 @@ void GameManager::update(float deltaTime){
 }
 
 void GameManager::processInputs(float deltaTime){
+    // this check if the player makes contact with the ground
+    bool groundCollision = false; 
+
+    // when the player collides with something it gets put into the contact list, so we iterate over this list
+    for (b2ContactEdge* pcd = player->physicsBody->GetContactList(); pcd != NULL; pcd = pcd->next){
+        // if the ground physics body is on the contact list then...
+        if (pcd->other == ground->physicsBody && pcd->contact->IsTouching()){
+            // ground collision occured
+            groundCollision = true;
+        }
+        else {
+            // ground collision didn't occur
+            groundCollision = false;
+        }
+        break;
+    }
+
     // when the game scene is on game active
     if (this->state == GAME_ACTIVE){
         // helps me to only apply a force to the x axis
@@ -91,9 +105,9 @@ void GameManager::processInputs(float deltaTime){
             player->physicsBody->SetLinearVelocity(b2Vec2(0, playerYVel));
         }
 
-        // if w is pressed and player's y velocity = 0
-        if (this->keys[GLFW_KEY_W] && (playerYVel <= 0.00001) ){
-            player->physicsBody->ApplyLinearImpulse(b2Vec2(0, 30.0f), player->physicsBody->GetLinearVelocity(), true);
+        // if w is pressed and player's y velocity = 0 and player presses once
+        if (this->keys[GLFW_KEY_W] && (abs(playerYVel) <= 0.1) && groundCollision){
+            player->physicsBody->ApplyLinearImpulse(b2Vec2(0, -10000.0f), player->physicsBody->GetWorldCenter(), true);
         }
     }
 }
