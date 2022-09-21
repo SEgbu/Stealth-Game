@@ -4,6 +4,7 @@
 #include <sprite.hpp>
 #include <resources.hpp>
 #include <gameobject.hpp>
+#include <texture2D.hpp>
 
 // GLFW library
 #include <glfw/glfw3.h>
