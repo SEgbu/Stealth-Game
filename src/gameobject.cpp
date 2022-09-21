@@ -12,11 +12,16 @@ GameObject::GameObject(glm::vec2 pos, glm::vec2 s, Texture2D spr, glm::vec3 col,
                        position(pos), size(s), sprite(spr), colour(col), velocity(vel) {
 } 
 
+GameObject::GameObject(glm::vec2 pos, glm::vec2 s, std::vector<Texture2D> spr2, glm::vec3 col, glm::vec2 vel): 
+                       position(pos), size(s), spriteVector(spr2), colour(col), velocity(vel) {
+} 
+
 GameObject::~GameObject(){
     physicsBody = nullptr; // deallocate physics body
+    spriteVector.clear(); // clear vector
 }
 
-void GameObject::initPhysicBody(bool isDynamic, float density, float friction){
+void GameObject::initPhysicsBody(bool isDynamic, float density, float friction){
     // if a dynamic physics body is requested
     if (isDynamic){
         // create a dynamic physics body
@@ -29,9 +34,14 @@ void GameObject::initPhysicBody(bool isDynamic, float density, float friction){
     }
 }
 
-void GameObject::draw(SpriteRenderer &renderer){
+void GameObject::draw(SpriteRenderer &renderer, int texIndex){
     float offsetX = size.x / 2;
     float offsetY = size.y / 2;
-    // render the sprite
-    renderer.drawSprite(this->sprite, glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), this->size, this->rotation, this->colour);
+
+    // render the sprite    
+    if (texIndex == -1)
+        renderer.drawSprite(this->sprite, glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), this->size, this->rotation, this->colour);       
+    else
+        renderer.drawSprite(this->spriteVector[texIndex], glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), this->size, this->rotation, this->colour);
+    
 }
