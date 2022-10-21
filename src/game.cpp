@@ -23,6 +23,7 @@ GameManager::~GameManager(){
     delete renderer;
     delete player;
     delete ground;
+    delete object;
 }
 
 // initialize variables 
