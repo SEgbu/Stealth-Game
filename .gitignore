@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Krita files
+*.kra

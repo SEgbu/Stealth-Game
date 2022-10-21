@@ -63,31 +63,23 @@ int main(){
     // Track key inputs using GLFW
     glfwSetKeyCallback(window, key_callback);
     
-    // deltaTime variables
-    float deltaTime = 0.0f;
-    float lastFrame = 0.0f;
-
     // initialize game manager
     stealth.init();
 
     // Render Loop
     while(!glfwWindowShouldClose(window)){
-        // creating deltaTime to maintain frame rate time across all devices
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
 
         // making the textures not look blurry
         glEnable(GL_BLEND);
-        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
         // game loop functions
-        stealth.processInputs(deltaTime);
-        stealth.update(deltaTime);
+        stealth.processInputs();
+        stealth.update();
 
         // Rendering commands
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // Set color which clears frame
+        glClearColor((GLfloat)246/256, (GLfloat)184/256, (GLfloat)4/256, 1.0f); // Set color which clears frame
 
         stealth.render();
         // End of rendering commands

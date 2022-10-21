@@ -30,7 +30,7 @@ class GameManager{
         GameManager(unsigned w, unsigned h); // constructor
         ~GameManager(); // destructor
         void init(); // initialization function before game loop
-        void processInputs(float deltaTime); // input handling during game loop
-        void update(float deltaTime); // dynamics movement of gameObjects during game loop
+        void processInputs(); // input handling during game loop
+        void update(); // dynamics movement of gameObjects during game loop
         void render(); // rendering operations 
 };

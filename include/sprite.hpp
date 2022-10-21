@@ -19,7 +19,7 @@ class SpriteRenderer {
         ~SpriteRenderer();
         
         // rendering sprite
-        void drawSprite(Texture2D& texture, glm::vec2 position,
+        void drawSprite(Texture2D& texture, glm::vec2 position, int zIndex,
                         glm::vec2 size = glm::vec2(15.0f, 15.0f), 
                         float rotate = 0.0f, glm::vec3 colour = glm::vec3(1.0f));
 

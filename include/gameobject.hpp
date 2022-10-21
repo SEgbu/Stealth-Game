@@ -37,5 +37,5 @@ class GameObject {
         // initialize physics body
         void initPhysicsBody(bool isDynamic, float density = 0.0f, float friction = 0.0f);
         // draw specific sprite
-        void draw(SpriteRenderer &renderer, int spriteIndex);
+        virtual void draw(SpriteRenderer &renderer, int texIndex, int zIndex);
 };

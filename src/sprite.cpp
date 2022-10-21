@@ -45,7 +45,7 @@ void SpriteRenderer::initRenderData(){
 }
 
 
-void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 position, glm::vec2 size, float rotate, glm::vec3 colour){
+void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 position, int zIndex, glm::vec2 size, float rotate, glm::vec3 colour){
     this->shader.use(); // set shader active
 
     // set model matrix to an identity matrix
@@ -54,7 +54,7 @@ void SpriteRenderer::drawSprite(Texture2D& texture, glm::vec2 position, glm::vec
     // the model matrix is being multiplied by other matrices for transformation 
     // the order in matrix multiplicaiton operations (this is all in reverse): translate, rotate then scale
 
-    model = glm::translate(model, glm::vec3(position, 0.0f)); // set sprite to position
+    model = glm::translate(model, glm::vec3(position, float(zIndex))); // set sprite to position
 
     model = glm::translate(model, glm::vec3(0.5f * size.x, 0.5f * size.y, 0.0f)); // move origin of rotation to centre of sprite
     model = glm::rotate(model, glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate 

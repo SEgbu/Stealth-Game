@@ -1,4 +1,5 @@
 #include <game.hpp>
+#include <noncollidable.hpp>
 #include <vector>
 
 // The game renderer
@@ -7,6 +8,7 @@ SpriteRenderer* renderer;
 // The game objects
 GameObject* player;
 GameObject* ground;
+GameObject* object;
 
 // player crouching boolean
 bool isPlayerCrouching = false;
@@ -47,6 +49,9 @@ void GameManager::init(){
     // loading and generating the ground texture
     ResourceManager::loadTexture("assets/tg.png", true, "ground");
 
+    // loading and genereating the object texture
+    ResourceManager::loadTexture("assets/crate.png", true, "object");
+
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
     
@@ -61,9 +66,15 @@ void GameManager::init(){
 
     // creating ground physics
     ground->initPhysicsBody(false);
+
+    // creating the object
+    object = new GameObject(glm::vec2(400.0f, 535.0f), glm::vec2(30.0f, 30.0f), ResourceManager::getTexture("object"));
+
+    // create the object physics 
+    object->initPhysicsBody(false);
 }
 
-void GameManager::update(float deltaTime){
+void GameManager::update(){
     if (this->state == GAME_ACTIVE){
         // physics process per second
         float timeStep = 1.0f / 60.0f;
@@ -71,16 +82,17 @@ void GameManager::update(float deltaTime){
         /* the amount of iterations Box2D will do to 
         maintain the constraints on the physics body 
         in a single time step*/
-        int32 velIterations = 6;
-        int32 posIterations = 2;
+        int32 velIterations = 8;
+        int32 posIterations = 3;
 
         // execute the physics process for all physics objects
         player->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
         ground->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
+        object->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
     }
 }
 
-void GameManager::processInputs(float deltaTime){
+void GameManager::processInputs(){
     // this check if the player makes contact with the ground
     bool groundCollision = false; 
 
@@ -105,13 +117,25 @@ void GameManager::processInputs(float deltaTime){
 
         // if a or left is pressed
         if ((this->keys[GLFW_KEY_A] || this->keys[GLFW_KEY_LEFT])){
-            // apply impulse force in the left direction
-            player->physicsBody->ApplyLinearImpulse(b2Vec2(-PLAYER_VELOCITY, 0), player->physicsBody->GetWorldCenter(), true);
+            if (isPlayerCrouching){
+                // apply a slower impulse force in the left direction 
+                player->physicsBody->ApplyLinearImpulse(b2Vec2(-(PLAYER_VELOCITY / 4), 0), player->physicsBody->GetWorldCenter(), true);
+            }
+            else {
+                // apply a regular impulse force in the left direction
+                player->physicsBody->ApplyLinearImpulse(b2Vec2(-PLAYER_VELOCITY, 0), player->physicsBody->GetWorldCenter(), true);
+            }
         }
         // if d or right is pressed
         else if ((this->keys[GLFW_KEY_D] || this->keys[GLFW_KEY_RIGHT])){
-            // apply impulse force in right direction
-            player->physicsBody->ApplyLinearImpulse(b2Vec2(PLAYER_VELOCITY, 0), player->physicsBody->GetWorldCenter(), true);
+            if (isPlayerCrouching){
+                // apply a slower impulse force in right direction
+                player->physicsBody->ApplyLinearImpulse(b2Vec2(PLAYER_VELOCITY / 4, 0), player->physicsBody->GetWorldCenter(), true);
+            }
+            else {
+                // apply a regular impulse force in the right direction
+                player->physicsBody->ApplyLinearImpulse(b2Vec2(PLAYER_VELOCITY, 0), player->physicsBody->GetWorldCenter(), true);
+            }
         }
         else{
             // stop the player horizontally
@@ -134,14 +158,17 @@ void GameManager::processInputs(float deltaTime){
 }
 
 void GameManager::render(){
-    // render ground
-    ground->draw(*renderer, -1);
     
+    // render ground
+    ground->draw(*renderer, -1, 0);
+
     // render player
     if (isPlayerCrouching){
-        player->draw(*renderer, 1);
+        player->draw(*renderer, 1, 0);
     }
     else{
-        player->draw(*renderer, 0);
+        player->draw(*renderer, 0, 0);
     }
+    // render object 
+    object->draw(*renderer, -1, 0);
 }

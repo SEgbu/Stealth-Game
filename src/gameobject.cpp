@@ -34,14 +34,14 @@ void GameObject::initPhysicsBody(bool isDynamic, float density, float friction){
     }
 }
 
-void GameObject::draw(SpriteRenderer &renderer, int texIndex){
+void GameObject::draw(SpriteRenderer &renderer, int texIndex, int zIndex){
     float offsetX = size.x / 2;
     float offsetY = size.y / 2;
 
     // render the sprite    
     if (texIndex == -1)
-        renderer.drawSprite(this->sprite, glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), this->size, this->rotation, this->colour);       
+        renderer.drawSprite(this->sprite, glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), zIndex, this->size, this->rotation, this->colour);       
     else
-        renderer.drawSprite(this->spriteVector[texIndex], glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), this->size, this->rotation, this->colour);
+        renderer.drawSprite(this->spriteVector[texIndex], glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), zIndex, this->size, this->rotation, this->colour);
     
 }
