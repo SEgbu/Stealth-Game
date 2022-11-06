@@ -10,10 +10,12 @@ GameObject::GameObject(): position(0.0f, 0.0f), size(1.0f, 1.0f), velocity(0.0f)
 
 GameObject::GameObject(glm::vec2 pos, glm::vec2 s, Texture2D spr, glm::vec3 col, glm::vec2 vel): 
                        position(pos), size(s), sprite(spr), colour(col), velocity(vel) {
+    rotation = 0.0f;
 } 
 
 GameObject::GameObject(glm::vec2 pos, glm::vec2 s, std::vector<Texture2D> spr2, glm::vec3 col, glm::vec2 vel): 
                        position(pos), size(s), spriteVector(spr2), colour(col), velocity(vel) {
+    rotation = 0.0f;
 } 
 
 GameObject::~GameObject(){

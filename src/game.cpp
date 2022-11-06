@@ -1,5 +1,6 @@
 #include <game.hpp>
 #include <noncollidable.hpp>
+#include <trigger.hpp>
 #include <vector>
 
 // The game renderer
@@ -9,6 +10,8 @@ SpriteRenderer* renderer;
 GameObject* player;
 GameObject* ground;
 GameObject* object;
+GameObject* enemy;
+Trigger* enemyTrigger;
 
 // player crouching boolean
 bool isPlayerCrouching = false;
@@ -24,6 +27,8 @@ GameManager::~GameManager(){
     delete player;
     delete ground;
     delete object;
+    delete enemy;
+    delete enemyTrigger;
 }
 
 // initialize variables 
@@ -53,6 +58,12 @@ void GameManager::init(){
     // loading and genereating the object texture
     ResourceManager::loadTexture("assets/crate.png", true, "object");
 
+    // loading and generating the enemy texture
+    ResourceManager::loadTexture("assets/guard.png", true, "enemy");
+
+    // loading and generating the enemy trigger texture 
+    ResourceManager::loadTexture("assets/trigger.png", true, "enemyTrigger");
+
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
     
@@ -61,6 +72,15 @@ void GameManager::init(){
 
     // creating player physics
     player->initPhysicsBody(true, 10.0f, 0.0f);
+
+    // create the enemy
+    enemy = new GameObject(glm::vec2(500.0f, 75.0f), glm::vec2(25.0f, 50.0f), ResourceManager::getTexture("enemy"));
+
+    // create the enemy physics
+    enemy->initPhysicsBody(true, 10.0f, 0.0f);
+
+    // creating enemy trigger
+    enemyTrigger = new Trigger(enemy->position, glm::vec2(125.0f, 5.0f), ResourceManager::getTexture("enemyTrigger"));
 
     // creating the ground
     ground = new GameObject(glm::vec2(375.0f, 600.0f), glm::vec2(700.f, 100.0f), ResourceManager::getTexture("ground"));
@@ -84,7 +104,9 @@ void GameManager::update(){
         maintain the constraints on the physics body 
         in a single time step*/
         int32 velIterations = 8;
-        int32 posIterations = 3;
+        int32 posIterations = 8;
+        // make the trigger follow the enemy
+        enemyTrigger->position = glm::vec2(enemy->physicsBody->GetPosition().x - 135, enemy->physicsBody->GetPosition().y - 17);
 
         // execute the physics process for all physics objects
         player->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
@@ -103,7 +125,7 @@ void GameManager::processInputs(){
         // when the player collides with something it gets put into the contact list, so we iterate over this list
         for (b2ContactEdge* pcd = player->physicsBody->GetContactList(); pcd != NULL; pcd = pcd->next){
             // if the ground physics body is on the contact list then...
-            if (pcd->other == ground->physicsBody && pcd->contact->IsTouching()){
+            if ((pcd->other == ground->physicsBody || pcd->other == object->physicsBody) && pcd->contact->IsTouching()){
                 // ground collision occured
                 groundCollision = true;
             }
@@ -144,7 +166,7 @@ void GameManager::processInputs(){
         }
 
         // if w is pressed and player's y velocity = 0 and player presses once
-        if (this->keys[GLFW_KEY_W] && (abs(playerYVel) <= 0.1) && groundCollision){
+        if (this->keys[GLFW_KEY_W] && (abs(playerYVel) <= 0.1) && groundCollision && !isPlayerCrouching){
             player->physicsBody->ApplyLinearImpulse(b2Vec2(0, -10000.0f), player->physicsBody->GetWorldCenter(), true);
         }
 
@@ -170,6 +192,13 @@ void GameManager::render(){
     else{
         player->draw(*renderer, 0, 0);
     }
+
     // render object 
     object->draw(*renderer, -1, 0);
+
+    // render enemy
+    enemy->draw(*renderer, -1, 0);
+
+    // render enemyTrigger 
+    enemyTrigger->draw(*renderer, -1, 0);
 }
