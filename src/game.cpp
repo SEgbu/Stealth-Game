@@ -15,6 +15,15 @@ Trigger* enemyDetectionZone;
 Trigger* enemyBack;
 Trigger* playerTrigger;
 
+// enumerator for enemy state
+enum EnemyState {
+    IDLE, 
+    AGGRO
+};
+
+// enemy default state is idle
+EnemyState enemyState = IDLE;
+
 // player crouching boolean
 bool isPlayerCrouching = false;
 
@@ -23,6 +32,12 @@ bool isPlayerTriggerSizeChanged = false;
 
 // a boolean which checks whether the player has intersected with the enemy
 bool hasPlayerKilledEnemy = false;
+
+// setting current time to zero 
+double time = 0;
+
+// a boolean to check whether the enemy has changed direction
+bool hasEnemyChangedDir = false;
 
 // Sets all public attributes to something
 GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_ACTIVE){
@@ -69,8 +84,11 @@ void GameManager::init(){
     // loading and genereating the object texture
     ResourceManager::loadTexture("assets/crate.png", true, "object");
 
-    // loading and generating the enemy texture
-    ResourceManager::loadTexture("assets/guard.png", true, "enemy");
+    // loading and generating the enemy left texture
+    ResourceManager::loadTexture("assets/enemyLeft.png", true, "enemyLeft");
+
+    // loading and generating the enemy right texture 
+    ResourceManager::loadTexture("assets/enemyRight.png", true, "enemyRight");
 
     // loading and generating the enemy trigger texture 
     ResourceManager::loadTexture("assets/trigger.png", true, "enemyDetectionZone");
@@ -83,6 +101,9 @@ void GameManager::init(){
 
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
+
+    // list of enemy textures
+    std::vector<Texture2D> enemyTextures = {ResourceManager::getTexture("enemyLeft"), ResourceManager::getTexture("enemyRight")};
     
     // creating the player
     player = new GameObject(glm::vec2(75.0f, 100.0f), glm::vec2(25.0f, 50.0f), playerTextures);
@@ -91,7 +112,7 @@ void GameManager::init(){
     player->initPhysicsBody(true, 10.0f, 0.0f);
 
     // create the enemy
-    enemy = new GameObject(glm::vec2(500.0f, 75.0f), glm::vec2(25.0f, 50.0f), ResourceManager::getTexture("enemy"));
+    enemy = new GameObject(glm::vec2(500.0f, 75.0f), glm::vec2(25.0f, 50.0f), enemyTextures);
 
     // create the enemy physics
     enemy->initPhysicsBody(true, 10.0f, 0.0f);
@@ -116,6 +137,9 @@ void GameManager::init(){
 
     // create the object physics 
     object->initPhysicsBody(false);
+
+    // set time to zero 
+    glfwSetTime(time);
 }
 
 void GameManager::update(){
@@ -129,11 +153,19 @@ void GameManager::update(){
         int32 velIterations = 8;
         int32 posIterations = 8;
 
-        // make the enemy detection zone follow the enemy
-        enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x - 135, enemy->physicsBody->GetPosition().y - 17);
+        // make the enemy detection zone and the enemy back trigger follow the enemy
+        if (enemyState == IDLE){
+            // if the enemy is idle, let the enemy back trigger and detection zone go behind and in front of the enemy when the enemy is looking around
+            if (hasEnemyChangedDir == true){
+                enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x - 135, enemy->physicsBody->GetPosition().y - 17);
+                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
+            }
+            else if (hasEnemyChangedDir == false){
+                enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - 17);
+                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
+            }
+        }
 
-        // make the enemy back trigger follow the enemy
-        enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
 
         // make the player trigger follow the player on the x
         playerTrigger->position.x = player->physicsBody->GetPosition().x - (player->size.x / 2);
@@ -157,6 +189,7 @@ void GameManager::update(){
             isPlayerTriggerSizeChanged = false;
         }
 
+        // turns off enemy triggers is enemy is killed by player
         if (playerTrigger->isTriggerIntersecting(enemyBack) && !hasPlayerKilledEnemy){
             enemy->physicsBody->GetFixtureList()->SetSensor(true);
             hasPlayerKilledEnemy = true;
@@ -235,7 +268,6 @@ void GameManager::processInputs(){
 }
 
 void GameManager::render(){
-    
     // render ground
     ground->draw(*renderer, -1, 0);
 
@@ -252,9 +284,18 @@ void GameManager::render(){
 
     // is the enemy hasn't been murdered
     if (!hasPlayerKilledEnemy){
-        // render enemy   
-        enemy->draw(*renderer, -1, 0);    
-        
+        if (enemyState == IDLE)
+            if (int(glfwGetTime()) % 2 == 0){
+                enemy->draw(*renderer, 0, 0);
+                hasEnemyChangedDir = true;
+            }
+            if (int(glfwGetTime()) % 2 != 0){
+                enemy->draw(*renderer, 1, 0); 
+                hasEnemyChangedDir = false;
+            }
+                
+        enemyBack->draw(*renderer, -1, 0);           
+
         // render enemyDetectionZone 
         enemyDetectionZone->draw(*renderer, -1, 0);
     }
