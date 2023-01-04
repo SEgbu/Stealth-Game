@@ -18,6 +18,8 @@ Trigger* playerTrigger;
 Trigger* enemyJumpTrigger;
 Trigger* boxTrigger;
 
+NonCollidableObject* exclamationMark;
+
 // enumerator for enemy state
 enum EnemyState {
     IDLE, 
@@ -66,6 +68,8 @@ GameManager::~GameManager(){
     delete playerTrigger;
     delete enemyJumpTrigger;
     delete boxTrigger;
+
+    delete exclamationMark;
 }
 
 // initialize variables 
@@ -116,6 +120,9 @@ void GameManager::init(){
     // loading and generating the box's trigger texture
     ResourceManager::loadTexture("assets/boxTrigger.png", true, "box");
 
+    // loading and generating the exclamation mark 
+    ResourceManager::loadTexture("assets/exclamation.png", true, "exclamation");
+
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
 
@@ -135,7 +142,7 @@ void GameManager::init(){
     enemy->initPhysicsBody(true, 10.0f, 0.0f);
 
     // creating enemy trigger
-    enemyDetectionZone = new Trigger(enemy->position, glm::vec2(125.0f, 5.0f), ResourceManager::getTexture("enemyDetectionZone"));
+    enemyDetectionZone = new Trigger(enemy->position, glm::vec2(220.0f, 5.0f), ResourceManager::getTexture("enemyDetectionZone"));
 
     // creating player trigger 
     playerTrigger = new Trigger(player->position, player->size, ResourceManager::getTexture("playerTrigger"));
@@ -145,6 +152,9 @@ void GameManager::init(){
 
     // creating enemy jump trigger 
     enemyJumpTrigger = new Trigger(enemy->position, enemyBack->size, ResourceManager::getTexture("enemyJump"));
+
+    // creating the exclamation mark
+    exclamationMark = new NonCollidableObject(glm::vec2(0,0), glm::vec2(14.0f, 28.0f), ResourceManager::getTexture("exclamation"));
 
     // creating the ground
     ground = new GameObject(glm::vec2(375.0f, 600.0f), glm::vec2(700.f, 100.0f), ResourceManager::getTexture("ground"));
@@ -176,38 +186,6 @@ void GameManager::update(){
         int32 velIterations = 8;
         int32 posIterations = 8;
 
-        // make the enemy detection zone and the enemy back trigger follow the enemy
-        if (enemyState == IDLE){
-            // if the enemy is idle, let the enemy back trigger and detection zone go behind and in front of the enemy when the enemy is looking around
-            if (hasEnemyChangedDir == true){
-                enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x - 135, enemy->physicsBody->GetPosition().y - 17);
-                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
-            }
-            else if (hasEnemyChangedDir == false){
-                enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - 17);
-                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));               
-            }
-        }
-
-        // trigger positions for the enemy in the enemy aggressive state
-        if (enemyState == AGGRO){
-            if (enemy->physicsBody->GetLinearVelocity().x < 0){
-                hasEnemyChangeDirInAggro = false;
-            }
-            else if (enemy->physicsBody->GetLinearVelocity().x > 0){
-                hasEnemyChangeDirInAggro = true;
-            }
-
-            if (hasEnemyChangeDirInAggro){
-                enemyJumpTrigger->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2) - 2, enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
-                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
-            }
-            else {
-                enemyJumpTrigger->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2) - 2, enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));                
-                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));               
-            }
-        }
-        
         // make the player trigger follow the player on the x
         playerTrigger->position.x = player->physicsBody->GetPosition().x - (player->size.x / 2);
         
@@ -236,15 +214,52 @@ void GameManager::update(){
             hasPlayerKilledEnemy = true;
         }
 
+        // enemy idle state
         if (enemyState == IDLE){
+            // if the enemy is idle, let the enemy back trigger and detection zone go behind and in front of the enemy when the enemy is looking around
+            if (hasEnemyChangedDir == true){
+                enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x - 230, enemy->physicsBody->GetPosition().y - 17);
+                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
+            }
+            else if (hasEnemyChangedDir == false){
+                enemyDetectionZone->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - 17);
+                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));               
+            }
+
             // make the enemy move when the player is in the detection zone
             if (enemyDetectionZone->isTriggerIntersecting(playerTrigger) && !hasPlayerKilledEnemy){
                 enemyState = AGGRO;
             }
         }
 
-        // aggresive state movement of the enemy
+        // enemy aggressive state
         if (enemyState == AGGRO){
+            // changes the enemy direction change boolean depending on whether x velocity is negative or positive
+            if (enemy->physicsBody->GetLinearVelocity().x < 0){
+                hasEnemyChangeDirInAggro = false;
+            }
+            else if (enemy->physicsBody->GetLinearVelocity().x > 0){
+                hasEnemyChangeDirInAggro = true;
+            }
+
+            // changing the position of the enemy jump and back trigger depending on whether the enemy has changed direction or not
+            if (hasEnemyChangeDirInAggro){
+                enemyJumpTrigger->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2) - 2, enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
+                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));
+            }
+            else {
+                enemyJumpTrigger->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2) - 2, enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));                
+                enemyBack->position = glm::vec2(enemy->physicsBody->GetPosition().x + (enemy->size.x / 2), enemy->physicsBody->GetPosition().y - (enemy->size.y / 2));               
+            }
+
+            // switch to the death scene when the play dies
+            if (enemyJumpTrigger->isTriggerIntersecting(playerTrigger)){
+                this->state = GAME_DEATH;
+            }
+
+            // exclamation mark following the enemy above the enemy's head
+            exclamationMark->position = glm::vec2(enemy->physicsBody->GetPosition().x - (enemy->size.x / 2) + 10, enemy->physicsBody->GetPosition().y - 60);
+
             // For the y direction    
             // if the enemy has collided with an object.
             if (enemyJumpTrigger->isTriggerIntersecting(boxTrigger) && !hasPlayerKilledEnemy && !hasEnemyJumped){
@@ -388,9 +403,13 @@ void GameManager::render(){
             }
             
             if (enemyState == AGGRO){
+                // rendering all the aggro triggers, the enemy sprites and the exclamation mark.
                 if (hasEnemyChangeDirInAggro) enemy->draw(*renderer, 1, 0);
                 else enemy->draw(*renderer, 0, 0);
-                enemyJumpTrigger->draw(*renderer, -1, 0);
+                if (!hasPlayerKilledEnemy){
+                    exclamationMark->draw(*renderer, -1, 0);
+                }
+                enemyBack->draw(*renderer, -1, 0);
             }     
         }
     }

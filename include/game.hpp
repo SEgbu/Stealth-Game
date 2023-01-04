@@ -16,7 +16,7 @@
 // Game Scenes 
 enum GameState{
     GAME_ACTIVE, 
-    GAME_MENU
+    GAME_DEATH
 };
 
 // Player constants 
