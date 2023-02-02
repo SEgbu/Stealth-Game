@@ -9,6 +9,14 @@ class Texture2D{
         unsigned int filterMin, filterMag; // filtering modes
         // constructor 
         Texture2D();
+        Texture2D(unsigned int w, 
+                  unsigned int h, 
+                  unsigned int internalFormat, 
+                  unsigned int imageFormat,
+                  unsigned int wrapS = GL_REPEAT, 
+                  unsigned int wrapT = GL_REPEAT,
+                  unsigned int filterMin = GL_NEAREST,
+                  unsigned int filterMag = GL_NEAREST);
         // make the texture
         void generate(unsigned int w, unsigned int h, unsigned char* data);
         // update the OpenGL context

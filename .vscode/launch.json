@@ -1,11 +1,7 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
     "configurations": [
         {
-            "name": "g++.exe - Build and debug active file",
+            "name": "C/C++: g++.exe build and debug active file",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\main.exe",
@@ -30,5 +26,6 @@
             ],
             "preLaunchTask": "C/C++: g++.exe build active file"
         }
-    ]
+    ],
+    "version": "2.0.0"
 }
