@@ -8,18 +8,20 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-g",
+				// Path to search include directories
+				// This allows use to use <glad/glad.h> (for example) instead of doing "../include/glad/glad.h" in main.cpp
 				"-I${workspaceFolder}\\include",
-				"-I${workspaceFolder}\\mingw64\\include\\freetype2",
+				// Path to search library directories
 				"-L${workspaceFolder}\\lib",
-				"-L${workspaceFolder}\\mingw64\\lib",
+				// Source files
 				"${workspaceFolder}\\src\\*.cpp",
 				"${workspaceFolder}\\src\\glad.c",
 				"${workspaceFolder}\\src\\box2d_src\\collision\\*.cpp",
 				"${workspaceFolder}\\src\\box2d_src\\common\\*.cpp",
 				"${workspaceFolder}\\src\\box2d_src\\dynamics\\*.cpp",
 				"${workspaceFolder}\\src\\box2d_src\\rope\\*.cpp",
+				// Other commands
 				"-lglfw3dll",
-				"-lfreetype",
 				"-o",
 				"${workspaceFolder}\\main.exe"
 			],

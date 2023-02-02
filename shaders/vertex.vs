@@ -11,5 +11,6 @@ uniform mat4 projection; // uniform matrix for displaying the game
 
 void main(){
     texCoords = vertex.zw; // set the tex coords to the last two floats of each row in vertices (in the sprite renderer, initRenderData)
-    gl_Position = projection * model * vec4(vertex.xy, 0.0, 1.0); // sets position and size of the object which is warped by the projection and model matrix
+    // sets position and size of the object which is warped by the projection and model matrix
+    gl_Position = projection * model * vec4(vertex.xy, 0.0, 1.0);
 }

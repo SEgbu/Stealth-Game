@@ -5,12 +5,6 @@ Texture2D::Texture2D() : width(0), height(0), internalFormat(GL_RGB), imageForma
                          wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_NEAREST), filterMag(GL_NEAREST){
 }
 
-Texture2D::Texture2D(unsigned int w, unsigned int h, unsigned int internalFormat, unsigned int imageFormat, unsigned int wrapS, unsigned int wrapT,
-                     unsigned int filterMin, unsigned int filterMag) : width(w), height(h), internalFormat(internalFormat), imageFormat(imageFormat),
-                                                                       wrapS(wrapS), wrapT(wrapT), filterMin(filterMin), filterMag(filterMag){
-
-}
-
 void Texture2D::generate(unsigned int w, unsigned int h, unsigned char* data){
     this->width = w;
     this->height = h;

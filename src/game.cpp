@@ -2,7 +2,6 @@
 #include <noncollidable.hpp>
 #include <trigger.hpp>
 #include <vector>
-#include <text.hpp>
 
 // The game renderer
 SpriteRenderer* renderer;
@@ -18,8 +17,6 @@ Trigger* enemyBack;
 Trigger* playerTrigger;
 Trigger* enemyJumpTrigger;
 Trigger* boxTrigger;
-
-Text testText((char*)"assets/SofiaSans-Bold.tff");
 
 NonCollidableObject* exclamationMark;
 
@@ -55,7 +52,7 @@ bool hasEnemyJumped = false;
 
 // Sets all public attributes to something
 GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_ACTIVE){
-    std::cout << "djalfsjflsj";
+
 }
 
 // deallocates renderer 
@@ -174,9 +171,6 @@ void GameManager::init(){
     // creating the box trigger
     boxTrigger = new Trigger(glm::vec2(object->physicsBody->GetPosition().x, object->physicsBody->GetPosition().y) - (object->size.y / 2), object->size, ResourceManager::getTexture("box"));
 
-    // // initialise text
-    testText.Init(this->width, this->height);
-    
     // set time to zero 
     glfwSetTime(time);
 }
@@ -289,7 +283,6 @@ void GameManager::update(){
                     enemy->physicsBody->ApplyLinearImpulse(b2Vec2(5, 0), enemy->physicsBody->GetWorldCenter(), true);
                 }
             }
-            
             // or if the enemy is mid-air
             else if (abs(enemy->physicsBody->GetLinearVelocity().y) < 0.01f){
                 if (enemy->physicsBody->GetPosition().x > player->physicsBody->GetPosition().x){
@@ -378,9 +371,6 @@ void GameManager::render(){
     if (this->state == GAME_ACTIVE){
         // render ground
         ground->draw(*renderer, -1, 0);
-
-        // render text
-        testText.Render("This is a test", 0, 0, 10.0f, glm::vec3(0));
 
         // render player
         if (isPlayerCrouching){
