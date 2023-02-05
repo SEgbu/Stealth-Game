@@ -19,6 +19,12 @@ enum GameState{
     GAME_DEATH
 };
 
+// Mouse position 
+struct MousePosition {
+    double xPos;
+    double yPos;
+};
+
 // Player constants 
 const float PLAYER_VELOCITY = 10.0f;
 
@@ -26,7 +32,10 @@ class GameManager{
     public: 
         GameState state; // game state
         bool keys[1024]; // key inputs
+        bool leftClick;
         unsigned int width, height; // dimensions of projection
+        MousePosition mousePos;
+        
         GameManager(unsigned w, unsigned h); // constructor
         ~GameManager(); // destructor
         void init(); // initialization function before game loop

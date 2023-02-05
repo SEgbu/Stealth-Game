@@ -26,6 +26,8 @@ const int SCREEN_HEIGHT = 600;
 // GLFW functions
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 // Processes inputs
 void processInput(GLFWwindow* window);
@@ -62,6 +64,9 @@ int main(){
 
     // Track key inputs using GLFW
     glfwSetKeyCallback(window, key_callback);
+
+    // Track cursor position using GLFW
+    glfwSetCursorPosCallback(window, cursor_position_callback);
     
     // initialize game manager
     stealth.init();
@@ -76,6 +81,20 @@ int main(){
         // game loop functions
         stealth.processInputs();
         stealth.update();
+        
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        stealth.mousePos.xPos = xpos;
+        stealth.mousePos.yPos = ypos;
+
+        int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+        
+        if (state == GLFW_PRESS){
+            stealth.leftClick = true;
+        }
+        else {
+            stealth.leftClick = false;
+        }
 
         // Rendering commands
         glClear(GL_COLOR_BUFFER_BIT);
@@ -115,3 +134,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
+
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods){
+    
+}

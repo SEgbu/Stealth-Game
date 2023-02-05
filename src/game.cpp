@@ -2,6 +2,7 @@
 #include <noncollidable.hpp>
 #include <trigger.hpp>
 #include <vector>
+#include <button.hpp>
 
 // The game renderer
 SpriteRenderer* renderer;
@@ -19,6 +20,8 @@ Trigger* enemyJumpTrigger;
 Trigger* boxTrigger;
 
 NonCollidableObject* exclamationMark;
+
+Button* testButton;
 
 // enumerator for enemy state
 enum EnemyState {
@@ -51,25 +54,32 @@ bool hasEnemyChangeDirInAggro = false;
 bool hasEnemyJumped = false;
 
 // Sets all public attributes to something
-GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_ACTIVE){
-
+GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h) ,state(GAME_ACTIVE){
 }
 
 // deallocates renderer 
 GameManager::~GameManager(){
+    // deleting render 
     delete renderer;
+    
+    // deleting game objects
     delete player;
     delete ground;
     delete object;
     delete enemy;
 
+    // deleting triggers
     delete enemyDetectionZone;
     delete enemyBack; 
     delete playerTrigger;
     delete enemyJumpTrigger;
     delete boxTrigger;
 
+    // deleting images
     delete exclamationMark;
+
+    // deleting button
+    delete testButton;
 }
 
 // initialize variables 
@@ -120,14 +130,24 @@ void GameManager::init(){
     // loading and generating the box's trigger texture
     ResourceManager::loadTexture("assets/boxTrigger.png", true, "box");
 
-    // loading and generating the exclamation mark 
+    // loading and generating the exclamation mark texture
     ResourceManager::loadTexture("assets/exclamation.png", true, "exclamation");
+
+    // loading and generating the button texture
+    ResourceManager::loadTexture("assets/testIdleButton.png", true, "testButtonIdle");
+    ResourceManager::loadTexture("assets/testHoverButton.png", true, "testButtonHover");
+    ResourceManager::loadTexture("assets/testPressedButton.png", true, "testButtonPressed");
 
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
 
     // list of enemy textures
     std::vector<Texture2D> enemyTextures = {ResourceManager::getTexture("enemyLeft"), ResourceManager::getTexture("enemyRight")};
+
+    // list of test button textures
+    std::vector<Texture2D> testButtonTextures = {ResourceManager::getTexture("testButtonIdle"), 
+                                             ResourceManager::getTexture("testButtonHover"),
+                                             ResourceManager::getTexture("testButtonPressed")};
     
     // creating the player
     player = new GameObject(glm::vec2(75.0f, 100.0f), glm::vec2(25.0f, 50.0f), playerTextures);
@@ -170,6 +190,12 @@ void GameManager::init(){
 
     // creating the box trigger
     boxTrigger = new Trigger(glm::vec2(object->physicsBody->GetPosition().x, object->physicsBody->GetPosition().y) - (object->size.y / 2), object->size, ResourceManager::getTexture("box"));
+
+    // creating the test button 
+    testButton = new Button(glm::vec2(300, 300), glm::vec2(200, 113), testButtonTextures);
+
+    // initializing the test button
+    testButton->init();
 
     // set time to zero 
     glfwSetTime(time);
@@ -365,6 +391,9 @@ void GameManager::processInputs(){
             isPlayerCrouching = false;
         }
     }
+    else if (this->state == GAME_DEATH){
+        testButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+    }
 }
 
 void GameManager::render(){
@@ -411,6 +440,17 @@ void GameManager::render(){
                 }
                 enemyBack->draw(*renderer, -1, 0);
             }     
+        }
+    }
+    else if (this->state == GAME_DEATH){
+        if (testButton->isHover && !testButton->isPressed){
+            testButton->draw(*renderer, 1, 0);
+        }
+        else if (testButton->isPressed && !testButton->isHover){
+            testButton->draw(*renderer, 2, 0);
+        }
+        else {
+            testButton->draw(*renderer, 0, 0);
         }
     }
 }
