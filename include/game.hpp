@@ -35,6 +35,7 @@ class GameManager{
         bool leftClick;
         unsigned int width, height; // dimensions of projection
         MousePosition mousePos;
+        bool quitProgram;
         
         GameManager(unsigned w, unsigned h); // constructor
         ~GameManager(); // destructor

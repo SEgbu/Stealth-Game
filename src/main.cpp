@@ -79,6 +79,10 @@ int main(){
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
         // game loop functions
+        if (stealth.quitProgram){
+            break;
+        }
+
         stealth.processInputs();
         stealth.update();
         

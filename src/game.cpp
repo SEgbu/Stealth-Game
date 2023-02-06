@@ -21,7 +21,9 @@ Trigger* boxTrigger;
 
 NonCollidableObject* exclamationMark;
 
-Button* testButton;
+Button* menuDeathScreenButton;
+Button* quitDeathScreenButton;
+Button* restartDeathScreenButton; 
 
 // enumerator for enemy state
 enum EnemyState {
@@ -54,7 +56,7 @@ bool hasEnemyChangeDirInAggro = false;
 bool hasEnemyJumped = false;
 
 // Sets all public attributes to something
-GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h) ,state(GAME_ACTIVE){
+GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h) ,state(GAME_ACTIVE), quitProgram(false){
 }
 
 // deallocates renderer 
@@ -78,8 +80,10 @@ GameManager::~GameManager(){
     // deleting images
     delete exclamationMark;
 
-    // deleting button
-    delete testButton;
+    // deleting buttons
+    delete menuDeathScreenButton;
+    delete quitDeathScreenButton;
+    delete restartDeathScreenButton; 
 }
 
 // initialize variables 
@@ -133,10 +137,18 @@ void GameManager::init(){
     // loading and generating the exclamation mark texture
     ResourceManager::loadTexture("assets/exclamation.png", true, "exclamation");
 
-    // loading and generating the button texture
-    ResourceManager::loadTexture("assets/testIdleButton.png", true, "testButtonIdle");
-    ResourceManager::loadTexture("assets/testHoverButton.png", true, "testButtonHover");
-    ResourceManager::loadTexture("assets/testPressedButton.png", true, "testButtonPressed");
+    // loading and generating the button textures
+    ResourceManager::loadTexture("assets/menuIdleDeathScreenButton.png", true, "menuDeathButtonIdle");
+    ResourceManager::loadTexture("assets/menuHoverDeathScreenButton.png", true, "menuDeathButtonHover");
+    ResourceManager::loadTexture("assets/menuPressedDeathScreenButton.png", true, "menuDeathButtonPressed");
+
+    ResourceManager::loadTexture("assets/quitIdleDeathScreenButton.png", true, "quitDeathButtonIdle");
+    ResourceManager::loadTexture("assets/quitHoverDeathScreenButton.png", true, "quitDeathButtonHover");
+    ResourceManager::loadTexture("assets/quitPressedDeathScreenButton.png", true, "quitDeathButtonPressed");
+
+    ResourceManager::loadTexture("assets/restartIdleDeathScreenButton.png", true, "restartDeathButtonIdle");
+    ResourceManager::loadTexture("assets/restartHoverDeathScreenButton.png", true, "restartDeathButtonHover");
+    ResourceManager::loadTexture("assets/restartPressedDeathScreenButton.png", true, "restartDeathButtonPressed");
 
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
@@ -145,9 +157,9 @@ void GameManager::init(){
     std::vector<Texture2D> enemyTextures = {ResourceManager::getTexture("enemyLeft"), ResourceManager::getTexture("enemyRight")};
 
     // list of test button textures
-    std::vector<Texture2D> testButtonTextures = {ResourceManager::getTexture("testButtonIdle"), 
-                                             ResourceManager::getTexture("testButtonHover"),
-                                             ResourceManager::getTexture("testButtonPressed")};
+    std::vector<Texture2D> menuDeathButtonTextures = {ResourceManager::getTexture("menuDeathButtonIdle"), ResourceManager::getTexture("menuDeathButtonHover"), ResourceManager::getTexture("menuDeathButtonPressed")};
+    std::vector<Texture2D> quitDeathButtonTextures = {ResourceManager::getTexture("quitDeathButtonIdle"), ResourceManager::getTexture("quitDeathButtonHover"), ResourceManager::getTexture("quitDeathButtonPressed")};
+    std::vector<Texture2D> restartDeathButtonTextures = {ResourceManager::getTexture("restartDeathButtonIdle"), ResourceManager::getTexture("restartDeathButtonHover"), ResourceManager::getTexture("restartDeathButtonPressed")};
     
     // creating the player
     player = new GameObject(glm::vec2(75.0f, 100.0f), glm::vec2(25.0f, 50.0f), playerTextures);
@@ -191,11 +203,15 @@ void GameManager::init(){
     // creating the box trigger
     boxTrigger = new Trigger(glm::vec2(object->physicsBody->GetPosition().x, object->physicsBody->GetPosition().y) - (object->size.y / 2), object->size, ResourceManager::getTexture("box"));
 
-    // creating the test button 
-    testButton = new Button(glm::vec2(300, 300), glm::vec2(200, 113), testButtonTextures);
-
-    // initializing the test button
-    testButton->init();
+    // creating death screen buttons
+    menuDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 220), glm::vec2(200, 113), menuDeathButtonTextures);
+    quitDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 480), glm::vec2(200, 113), quitDeathButtonTextures);
+    restartDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 350), glm::vec2(200, 113), restartDeathButtonTextures);
+    
+    // initializing death screen buttons
+    menuDeathScreenButton->init();
+    quitDeathScreenButton->init();
+    restartDeathScreenButton->init();
 
     // set time to zero 
     glfwSetTime(time);
@@ -327,6 +343,14 @@ void GameManager::update(){
         ground->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
         object->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
     }
+    else if (this->state == GAME_DEATH){
+        if (quitDeathScreenButton->isPressed){
+            this->quitProgram = true;
+        }
+        if (restartDeathScreenButton->isPressed){
+            this->state = GAME_ACTIVE;
+        }
+    }
 }
 
 void GameManager::processInputs(){
@@ -379,12 +403,12 @@ void GameManager::processInputs(){
         }
 
         // if w is pressed and player's y velocity = 0 and player presses once
-        if (this->keys[GLFW_KEY_W] && (abs(playerYVel) <= 0.1) && groundCollision && !isPlayerCrouching){
+        if ((this->keys[GLFW_KEY_W] || this->keys[GLFW_KEY_UP]) && (abs(playerYVel) <= 0.1) && groundCollision && !isPlayerCrouching){
             player->physicsBody->ApplyLinearImpulse(b2Vec2(0, -10000.0f), player->physicsBody->GetWorldCenter(), true);
         }
 
         // sets the crouching boolean true if the s key is pressed
-        if (this->keys[GLFW_KEY_S]){
+        if (this->keys[GLFW_KEY_S] || this->keys[GLFW_KEY_DOWN]){
             isPlayerCrouching = true;
         }
         else {
@@ -392,7 +416,9 @@ void GameManager::processInputs(){
         }
     }
     else if (this->state == GAME_DEATH){
-        testButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+        menuDeathScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+        quitDeathScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+        restartDeathScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
     }
 }
 
@@ -443,14 +469,34 @@ void GameManager::render(){
         }
     }
     else if (this->state == GAME_DEATH){
-        if (testButton->isHover && !testButton->isPressed){
-            testButton->draw(*renderer, 1, 0);
+        if (menuDeathScreenButton->isHover && !menuDeathScreenButton->isPressed){
+            menuDeathScreenButton->draw(*renderer, 1, 0);
         }
-        else if (testButton->isPressed && !testButton->isHover){
-            testButton->draw(*renderer, 2, 0);
+        else if (!menuDeathScreenButton->isHover && menuDeathScreenButton->isPressed){
+            menuDeathScreenButton->draw(*renderer, 2, 0);
         }
         else {
-            testButton->draw(*renderer, 0, 0);
+            menuDeathScreenButton->draw(*renderer, 0, 0);
+        }
+        
+        if (quitDeathScreenButton->isHover && !quitDeathScreenButton->isPressed){
+            quitDeathScreenButton->draw(*renderer, 1, 0);
+        }
+        else if (!quitDeathScreenButton->isHover && quitDeathScreenButton->isPressed){
+            quitDeathScreenButton->draw(*renderer, 2, 0);
+        }
+        else {
+            quitDeathScreenButton->draw(*renderer, 0, 0);
+        }
+
+        if (restartDeathScreenButton->isHover && !restartDeathScreenButton->isPressed){
+            restartDeathScreenButton->draw(*renderer, 1, 0);
+        }
+        else if (!restartDeathScreenButton->isHover && restartDeathScreenButton->isPressed){
+            restartDeathScreenButton->draw(*renderer, 2, 0);
+        }
+        else {
+            restartDeathScreenButton->draw(*renderer, 0, 0);
         }
     }
 }
