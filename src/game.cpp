@@ -349,6 +349,8 @@ void GameManager::update(){
         }
         if (restartDeathScreenButton->isPressed){
             this->state = GAME_ACTIVE;
+            this->init();
+            enemyState = EnemyState::IDLE;
         }
     }
 }
