@@ -20,6 +20,7 @@ Trigger* enemyJumpTrigger;
 Trigger* boxTrigger;
 
 NonCollidableObject* exclamationMark;
+NonCollidableObject* deathScreenText;
 
 Button* menuDeathScreenButton;
 Button* quitDeathScreenButton;
@@ -79,6 +80,7 @@ GameManager::~GameManager(){
 
     // deleting images
     delete exclamationMark;
+    delete deathScreenText;
 
     // deleting buttons
     delete menuDeathScreenButton;
@@ -136,6 +138,9 @@ void GameManager::init(){
 
     // loading and generating the exclamation mark texture
     ResourceManager::loadTexture("assets/exclamation.png", true, "exclamation");
+
+    // loading and generating the death screen text texture
+    ResourceManager::loadTexture("assets/you died.png", true, "deathScreenText");
 
     // loading and generating the button textures
     ResourceManager::loadTexture("assets/menuIdleDeathScreenButton.png", true, "menuDeathButtonIdle");
@@ -202,6 +207,9 @@ void GameManager::init(){
 
     // creating the box trigger
     boxTrigger = new Trigger(glm::vec2(object->physicsBody->GetPosition().x, object->physicsBody->GetPosition().y) - (object->size.y / 2), object->size, ResourceManager::getTexture("box"));
+
+    // creating the death screen text
+    deathScreenText = new NonCollidableObject(glm::vec2((this->width / 2) - (600 / 2), 0), glm::vec2(600, (600 / 16) * 9), ResourceManager::getTexture("deathScreenText"));
 
     // creating death screen buttons
     menuDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 220), glm::vec2(200, 113), menuDeathButtonTextures);
@@ -471,6 +479,8 @@ void GameManager::render(){
         }
     }
     else if (this->state == GAME_DEATH){
+        deathScreenText->draw(*renderer, -1, 0);
+
         if (menuDeathScreenButton->isHover && !menuDeathScreenButton->isPressed){
             menuDeathScreenButton->draw(*renderer, 1, 0);
         }
