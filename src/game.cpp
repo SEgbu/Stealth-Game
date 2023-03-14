@@ -3,6 +3,7 @@
 #include <trigger.hpp>
 #include <vector>
 #include <button.hpp>
+#include <text.hpp>
 
 // The game renderer
 SpriteRenderer* renderer;
@@ -25,6 +26,8 @@ NonCollidableObject* deathScreenText;
 Button* menuDeathScreenButton;
 Button* quitDeathScreenButton;
 Button* restartDeathScreenButton; 
+
+Text* testText;
 
 // enumerator for enemy state
 enum EnemyState {
@@ -86,6 +89,9 @@ GameManager::~GameManager(){
     delete menuDeathScreenButton;
     delete quitDeathScreenButton;
     delete restartDeathScreenButton; 
+
+    // deleting text objects
+    delete testText;
 }
 
 // initialize variables 
@@ -221,6 +227,9 @@ void GameManager::init(){
     quitDeathScreenButton->init();
     restartDeathScreenButton->init();
 
+    // creating the text object
+    testText = new Text(glm::vec2(0, 0), glm::vec2(72));
+
     // set time to zero 
     glfwSetTime(time);
 }
@@ -262,6 +271,10 @@ void GameManager::update(){
         if (playerTrigger->isTriggerIntersecting(enemyBack) && !hasPlayerKilledEnemy){
             enemy->physicsBody->GetFixtureList()->SetSensor(true);
             hasPlayerKilledEnemy = true;
+        }
+
+        if (player->physicsBody->GetPosition().y > this->height + 20){
+            this->state = GAME_DEATH;
         }
 
         // enemy idle state
@@ -359,6 +372,7 @@ void GameManager::update(){
             this->state = GAME_ACTIVE;
             this->init();
             enemyState = EnemyState::IDLE;
+            hasPlayerKilledEnemy = false;
         }
     }
 }
@@ -450,6 +464,9 @@ void GameManager::render(){
 
         // render object trigger
         boxTrigger->draw(*renderer, -1, 0);
+
+        // render test text 
+        testText->draw(*renderer, "HELLO WORLD");
 
         // is the enemy hasn't been murdered
         if (!hasPlayerKilledEnemy){
