@@ -18,5 +18,6 @@ class Text {
         Text(glm::vec2 pos, glm::vec2 fSize);
         void draw(SpriteRenderer& renderer, std::string message);
     private:
-        std::vector<Texture2D> alphabetTextures;
+        std::vector<Texture2D> numberTextures;
+        std::vector<Texture2D> symbolTextures;
 };

@@ -228,7 +228,7 @@ void GameManager::init(){
     restartDeathScreenButton->init();
 
     // creating the text object
-    testText = new Text(glm::vec2(0, 0), glm::vec2(72));
+    testText = new Text(glm::vec2(0, 0), glm::vec2(36));
 
     // set time to zero 
     glfwSetTime(time);
@@ -466,7 +466,7 @@ void GameManager::render(){
         boxTrigger->draw(*renderer, -1, 0);
 
         // render test text 
-        testText->draw(*renderer, "HELLO WORLD");
+        testText->draw(*renderer, "H:");
 
         // is the enemy hasn't been murdered
         if (!hasPlayerKilledEnemy){
