@@ -4,11 +4,13 @@
 #include <vector>
 #include <button.hpp>
 #include <text.hpp>
+#include <string>
+
 
 // The game renderer
 SpriteRenderer* renderer;
 
-// The game objects
+// The objects
 GameObject* player;
 GameObject* ground;
 GameObject* object;
@@ -27,7 +29,7 @@ Button* menuDeathScreenButton;
 Button* quitDeathScreenButton;
 Button* restartDeathScreenButton; 
 
-Text* testText;
+Text* scoreText;
 
 // enumerator for enemy state
 enum EnemyState {
@@ -59,8 +61,20 @@ bool hasEnemyChangeDirInAggro = false;
 // a boolean which checks if the enemy has jumped yet
 bool hasEnemyJumped = false;
 
+// file writer and reader of memory
+std::ofstream outHighScoreFile;
+std::ifstream inHighScoreFile;
+std::stringstream highScoreBuffer;
+std::string getterHighScoreString;
+
+// current score
+int temp = 0;
+int* currentScore = &(temp); 
+int* highScore = new int;
+
 // Sets all public attributes to something
-GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h) ,state(GAME_ACTIVE), quitProgram(false){
+GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_ACTIVE), quitProgram(false){
+
 }
 
 // deallocates renderer 
@@ -90,8 +104,26 @@ GameManager::~GameManager(){
     delete quitDeathScreenButton;
     delete restartDeathScreenButton; 
 
-    // deleting text objects
-    delete testText;
+    // deleting text
+    delete scoreText;
+
+    std::cout << *currentScore << std::endl;
+    std::cout << *highScore << std::endl;
+    
+    if (*currentScore > *highScore){
+        // get score and close scoreFile
+        outHighScoreFile.open("save/score.txt", std::ios::out | std::ios::trunc);
+
+        if (outHighScoreFile.is_open()){
+            outHighScoreFile << *currentScore;
+            
+            if (outHighScoreFile.fail()){
+                std::cout << "Error" << std::endl;
+            }
+        }
+
+        outHighScoreFile.close();
+    }
 }
 
 // initialize variables 
@@ -217,6 +249,24 @@ void GameManager::init(){
     // creating the death screen text
     deathScreenText = new NonCollidableObject(glm::vec2((this->width / 2) - (600 / 2), 0), glm::vec2(600, (600 / 16) * 9), ResourceManager::getTexture("deathScreenText"));
 
+    // creating the score text
+    scoreText = new Text(glm::vec2(0, 0), glm::vec2(30));
+
+    // loading highscore from file and setting it to high score
+    inHighScoreFile.open("save/score.txt");
+
+    if (inHighScoreFile.is_open()){
+        highScoreBuffer << inHighScoreFile.rdbuf();
+        getterHighScoreString = highScoreBuffer.str();
+
+        if (getterHighScoreString.length() == 0)
+            *highScore = 0;
+        else
+            *highScore = std::stoi(getterHighScoreString);
+    }
+
+    inHighScoreFile.close();
+
     // creating death screen buttons
     menuDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 220), glm::vec2(200, 113), menuDeathButtonTextures);
     quitDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 480), glm::vec2(200, 113), quitDeathButtonTextures);
@@ -226,9 +276,6 @@ void GameManager::init(){
     menuDeathScreenButton->init();
     quitDeathScreenButton->init();
     restartDeathScreenButton->init();
-
-    // creating the text object
-    testText = new Text(glm::vec2(0, 0), glm::vec2(36));
 
     // set time to zero 
     glfwSetTime(time);
@@ -257,6 +304,7 @@ void GameManager::update(){
             // trigger size has changed
             isPlayerTriggerSizeChanged = true;
         }
+
         // if player isn't crouching
         else if (!isPlayerCrouching){
             // set player back to its original height 
@@ -271,6 +319,7 @@ void GameManager::update(){
         if (playerTrigger->isTriggerIntersecting(enemyBack) && !hasPlayerKilledEnemy){
             enemy->physicsBody->GetFixtureList()->SetSensor(true);
             hasPlayerKilledEnemy = true;
+            *currentScore += 5;
         }
 
         if (player->physicsBody->GetPosition().y > this->height + 20){
@@ -462,11 +511,13 @@ void GameManager::render(){
         // render object 
         object->draw(*renderer, -1, 0);
 
+        // render score
+        std::stringstream tempBuffer;
+        tempBuffer << *currentScore;
+        scoreText->draw(*renderer, "SCORE: "+(tempBuffer.str()));
+
         // render object trigger
         boxTrigger->draw(*renderer, -1, 0);
-
-        // render test text 
-        testText->draw(*renderer, "H:");
 
         // is the enemy hasn't been murdered
         if (!hasPlayerKilledEnemy){

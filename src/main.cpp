@@ -111,6 +111,8 @@ int main(){
         glfwPollEvents(); // Checks if events are triggered
     }
 
+    stealth.~GameManager();
+
     ResourceManager::clear(); // clear resources
     glfwTerminate(); // End program
     return 0;

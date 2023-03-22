@@ -21,7 +21,8 @@ Text::Text(glm::vec2 pos, glm::vec2 fSize): position(pos), fontSize(fSize){
     std::string numbers0to8 = "012345678";
 
     for (int i = 1; i < 10; i++){
-        ResourceManager::loadTexture(("assets/copper black font/image"+std::to_string(i)+"x7.png").c_str(), true, std::to_string(numbers0to8[i]));
+        std::string temp(1, numbers0to8[i]);
+        ResourceManager::loadTexture(("assets/copper black font/image"+std::to_string(i)+"x7.png").c_str(), true, temp);
     }
 
     ResourceManager::loadTexture("assets/copper black font/image1x8.png", true, "9");
@@ -39,22 +40,30 @@ Text::Text(glm::vec2 pos, glm::vec2 fSize): position(pos), fontSize(fSize){
     ResourceManager::loadTexture("assets/copper black font/image7x9.png", true, ")");
 }
 
-std::string special = "1234567890:,/#'!?.()";
+std::string symbol = ":,/#'!?.()";
+std::string numbers = "1234567890";
 
 void Text::draw(SpriteRenderer& renderer, std::string message){
     for (int i = 0; i < (message.length()); i++){  
         if (message[i] != (' ')){
             glm::vec2 currentCharPosition = position + glm::vec2(i*fontSize.x, 0); 
 
-            if (special.find(message[i]) != std::string::npos){
+            if (symbol.find(message[i]) != std::string::npos){
                 std::string temp(1, message[i]);
                 Texture2D currentMessageCharTexture = ResourceManager::getTexture(temp);
                 renderer.drawSprite(currentMessageCharTexture, currentCharPosition, 0, fontSize);   
             }
-            else {     
+            else if (numbers.find(message[i]) != std::string::npos){
+                if (message[i] != '9')
+                    message[i] += 1;
+                std::string temp(1, message[i]);
+                Texture2D currentMessageCharTexture = ResourceManager::getTexture(temp);
+                renderer.drawSprite(currentMessageCharTexture, currentCharPosition, 0, fontSize);   
+            }
+            else {    
                 Texture2D currentMessageCharTexture = ResourceManager::getTexture(std::to_string(message[i]));
-                renderer.drawSprite(currentMessageCharTexture, currentCharPosition, 0, fontSize);
-            }       
+                renderer.drawSprite(currentMessageCharTexture, currentCharPosition, 0, fontSize);    
+            }
         }
         else {
             continue;
