@@ -16,7 +16,8 @@
 // Game Scenes 
 enum GameState{
     GAME_ACTIVE, 
-    GAME_DEATH
+    GAME_DEATH,
+    GAME_MENU
 };
 
 // Mouse position 

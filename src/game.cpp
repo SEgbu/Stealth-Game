@@ -24,10 +24,15 @@ Trigger* boxTrigger;
 
 NonCollidableObject* exclamationMark;
 NonCollidableObject* deathScreenText;
+NonCollidableObject* logo;
+NonCollidableObject* playerMenu;
+NonCollidableObject* enemyMenu;
 
 Button* menuDeathScreenButton;
 Button* quitDeathScreenButton;
 Button* restartDeathScreenButton; 
+Button* playMenuScreenButton;
+Button* quitMenuScreenButton;
 
 Text* scoreText;
 Text* deathScreenHighScore;
@@ -62,6 +67,9 @@ bool hasEnemyChangeDirInAggro = false;
 // a boolean which checks if the enemy has jumped yet
 bool hasEnemyJumped = false;
 
+// a boolean which detects whether the game has been initialized
+bool hasInit = false;
+
 // file writer and reader of memory
 std::ofstream outHighScoreFile;
 std::ifstream inHighScoreFile;
@@ -77,7 +85,7 @@ int* highScore = new int;
 std::string deathScreenHighScoreString;
 
 // Sets all public attributes to something
-GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_ACTIVE), quitProgram(false){
+GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_MENU), quitProgram(false){
 
 }
 
@@ -103,10 +111,17 @@ GameManager::~GameManager(){
     delete exclamationMark;
     delete deathScreenText;
 
+    delete logo;
+    delete playerMenu;
+    delete enemyMenu;
+
     // deleting buttons
     delete menuDeathScreenButton;
     delete quitDeathScreenButton;
     delete restartDeathScreenButton; 
+    
+    delete playMenuScreenButton;
+    delete quitMenuScreenButton;
 
     // deleting text
     delete scoreText;
@@ -145,70 +160,85 @@ GameManager::~GameManager(){
 
 // initialize variables 
 void GameManager::init(){
-    // setting up shader program
-    ResourceManager::loadShader("shaders/vertex.vs", "shaders/fragment.fs", "sprite"); 
+    if (!hasInit){
+        // setting up shader program
+        ResourceManager::loadShader("shaders/vertex.vs", "shaders/fragment.fs", "sprite"); 
 
-    // setting up projection matrix for the player viewing the game 
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+        // setting up projection matrix for the player viewing the game 
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
 
-    // setting some uniforms in the vertex or frag shader
-    ResourceManager::getShader("sprite").use().setInteger("myTexture", 0);
-    ResourceManager::getShader("sprite").setMatrix4("projection", projection);
+        // setting some uniforms in the vertex or frag shader
+        ResourceManager::getShader("sprite").use().setInteger("myTexture", 0);
+        ResourceManager::getShader("sprite").setMatrix4("projection", projection);
 
-    // setting up the game renderer
-    renderer = new SpriteRenderer(ResourceManager::getShader("sprite").use());
+        // setting up the game renderer
+        renderer = new SpriteRenderer(ResourceManager::getShader("sprite").use());
 
-    // loding and generating the player texture
-    ResourceManager::loadTexture("assets/player.png", true, "player");
+        // loding and generating the player texture
+        ResourceManager::loadTexture("assets/player.png", true, "player");
 
-    // loading and generating the player crouch texture
-    ResourceManager::loadTexture("assets/playerCrouch.png", true, "playerCrouch");
+        // loading and generating the player crouch texture
+        ResourceManager::loadTexture("assets/playerCrouch.png", true, "playerCrouch");
 
-    // loading and generating the ground texture
-    ResourceManager::loadTexture("assets/tg.png", true, "ground");
+        // loading and generating the ground texture
+        ResourceManager::loadTexture("assets/tg.png", true, "ground");
 
-    // loading and genereating the object texture
-    ResourceManager::loadTexture("assets/crate.png", true, "object");
+        // loading and genereating the object texture
+        ResourceManager::loadTexture("assets/crate.png", true, "object");
 
-    // loading and generating the enemy left texture
-    ResourceManager::loadTexture("assets/enemyLeft.png", true, "enemyLeft");
+        // loading and generating the enemy left texture
+        ResourceManager::loadTexture("assets/enemyLeft.png", true, "enemyLeft");
 
-    // loading and generating the enemy right texture 
-    ResourceManager::loadTexture("assets/enemyRight.png", true, "enemyRight");
+        // loading and generating the enemy right texture 
+        ResourceManager::loadTexture("assets/enemyRight.png", true, "enemyRight");
 
-    // loading and generating the enemy trigger texture 
-    ResourceManager::loadTexture("assets/trigger.png", true, "enemyDetectionZone");
+        // loading and generating the enemy trigger texture 
+        ResourceManager::loadTexture("assets/trigger.png", true, "enemyDetectionZone");
 
-    // loading and generating the player's trigger texture
-    ResourceManager::loadTexture("assets/playerTrigger.png", true, "playerTrigger");
+        // loading and generating the player's trigger texture
+        ResourceManager::loadTexture("assets/playerTrigger.png", true, "playerTrigger");
 
-    // loading and generating the enemy's back trigger texture
-    ResourceManager::loadTexture("assets/enemyBackTrigger.png", true, "enemyBack");
+        // loading and generating the enemy's back trigger texture
+        ResourceManager::loadTexture("assets/enemyBackTrigger.png", true, "enemyBack");
 
-    // loading and generating the enemy's jump trigger texture
-    ResourceManager::loadTexture("assets/enemyJumpTrigger.png", true, "enemyJump");
+        // loading and generating the enemy's jump trigger texture
+        ResourceManager::loadTexture("assets/enemyJumpTrigger.png", true, "enemyJump");
 
-    // loading and generating the box's trigger texture
-    ResourceManager::loadTexture("assets/boxTrigger.png", true, "box");
+        // loading and generating the box's trigger texture
+        ResourceManager::loadTexture("assets/boxTrigger.png", true, "box");
 
-    // loading and generating the exclamation mark texture
-    ResourceManager::loadTexture("assets/exclamation.png", true, "exclamation");
+        // loading and generating the exclamation mark texture
+        ResourceManager::loadTexture("assets/exclamation.png", true, "exclamation");
 
-    // loading and generating the death screen text texture
-    ResourceManager::loadTexture("assets/you died.png", true, "deathScreenText");
+        // loading and generating the death screen text texture
+        ResourceManager::loadTexture("assets/you died.png", true, "deathScreenText");
 
-    // loading and generating the button textures
-    ResourceManager::loadTexture("assets/menuIdleDeathScreenButton.png", true, "menuDeathButtonIdle");
-    ResourceManager::loadTexture("assets/menuHoverDeathScreenButton.png", true, "menuDeathButtonHover");
-    ResourceManager::loadTexture("assets/menuPressedDeathScreenButton.png", true, "menuDeathButtonPressed");
+        // loading and generating the button textures
+        ResourceManager::loadTexture("assets/menuIdleDeathScreenButton.png", true, "menuDeathButtonIdle");
+        ResourceManager::loadTexture("assets/menuHoverDeathScreenButton.png", true, "menuDeathButtonHover");
+        ResourceManager::loadTexture("assets/menuPressedDeathScreenButton.png", true, "menuDeathButtonPressed");
 
-    ResourceManager::loadTexture("assets/quitIdleDeathScreenButton.png", true, "quitDeathButtonIdle");
-    ResourceManager::loadTexture("assets/quitHoverDeathScreenButton.png", true, "quitDeathButtonHover");
-    ResourceManager::loadTexture("assets/quitPressedDeathScreenButton.png", true, "quitDeathButtonPressed");
+        ResourceManager::loadTexture("assets/quitIdleDeathScreenButton.png", true, "quitDeathButtonIdle");
+        ResourceManager::loadTexture("assets/quitHoverDeathScreenButton.png", true, "quitDeathButtonHover");
+        ResourceManager::loadTexture("assets/quitPressedDeathScreenButton.png", true, "quitDeathButtonPressed");
 
-    ResourceManager::loadTexture("assets/restartIdleDeathScreenButton.png", true, "restartDeathButtonIdle");
-    ResourceManager::loadTexture("assets/restartHoverDeathScreenButton.png", true, "restartDeathButtonHover");
-    ResourceManager::loadTexture("assets/restartPressedDeathScreenButton.png", true, "restartDeathButtonPressed");
+        ResourceManager::loadTexture("assets/restartIdleDeathScreenButton.png", true, "restartDeathButtonIdle");
+        ResourceManager::loadTexture("assets/restartHoverDeathScreenButton.png", true, "restartDeathButtonHover");
+        ResourceManager::loadTexture("assets/restartPressedDeathScreenButton.png", true, "restartDeathButtonPressed");
+
+        // loading and generating main menu buttons and images
+        ResourceManager::loadTexture("assets/playIdleMenuScreenButton.png", true, "playMenuButtonIdle");
+        ResourceManager::loadTexture("assets/playHoverMenuScreenButton.png", true, "playMenuButtonHover");
+        ResourceManager::loadTexture("assets/playPressedMenuScreenButton.png", true, "playMenuButtonPressed");
+
+        ResourceManager::loadTexture("assets/guardMenu.png", true, "enemyMenuImage");
+        ResourceManager::loadTexture("assets/playerMenu.png", true, "playerMenuImage");
+        ResourceManager::loadTexture("assets/gameLogo.png", true, "gameLogoImage");
+
+    }
+
+    // list of play menu button textures
+    std::vector<Texture2D> playMenuButtonTextures = {ResourceManager::getTexture("playMenuButtonIdle"), ResourceManager::getTexture("playMenuButtonHover"), ResourceManager::getTexture("playMenuButtonPressed")};
 
     // list of player textures
     std::vector<Texture2D> playerTextures = {ResourceManager::getTexture("player"), ResourceManager::getTexture("playerCrouch")};
@@ -273,19 +303,24 @@ void GameManager::init(){
     deathScreenHighScore = new Text(glm::vec2 ((this->width / 2) - 175, 150), glm::vec2(30));
 
     // loading highscore from file and setting it to high score
-    inHighScoreFile.open("save/score.txt");
+    if (hasInit == false){
+        inHighScoreFile.open("save/score.txt");
 
-    if (inHighScoreFile.is_open()){
-        highScoreBuffer << inHighScoreFile.rdbuf();
-        getterHighScoreString = highScoreBuffer.str();
+        hasInit = true;
+        if (inHighScoreFile.is_open()){
+            highScoreBuffer << inHighScoreFile.rdbuf();
+            getterHighScoreString = highScoreBuffer.str();
 
-        if (getterHighScoreString.length() == 0)
-            *highScore = 0;
-        else
-            *highScore = std::stoi(getterHighScoreString);
+            if (getterHighScoreString.length() == 0)
+                *highScore = 0;
+            else
+                *highScore = std::stoi(getterHighScoreString);
+        }
+
+        inHighScoreFile.close();
     }
 
-    inHighScoreFile.close();
+
 
     // creating death screen buttons
     menuDeathScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 220), glm::vec2(200, 113), menuDeathButtonTextures);
@@ -296,6 +331,18 @@ void GameManager::init(){
     menuDeathScreenButton->init();
     quitDeathScreenButton->init();
     restartDeathScreenButton->init();
+
+    // main menu items
+    enemyMenu = new NonCollidableObject(glm::vec2(30, 100), glm::vec2(200, 250), ResourceManager::getTexture("enemyMenuImage"));
+    playerMenu = new NonCollidableObject(glm::vec2(500, 100), glm::vec2(225), ResourceManager::getTexture("playerMenuImage"));
+    logo = new NonCollidableObject(glm::vec2(this->width / 2 - 200, 50), glm::vec2(400, 300), ResourceManager::getTexture("gameLogoImage"));
+
+    playMenuScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 350), glm::vec2(200, 113), playMenuButtonTextures);
+    quitMenuScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 480), glm::vec2(200, 113), quitDeathButtonTextures);
+
+    // initializing menu screen buttons
+    playMenuScreenButton->init();
+    quitMenuScreenButton->init();
 
     // set time to zero 
     glfwSetTime(time);
@@ -434,6 +481,7 @@ void GameManager::update(){
         object->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
     }
     else if (this->state == GAME_DEATH){
+        *currentScore = 0;
         if (quitDeathScreenButton->isPressed){
             this->quitProgram = true;
         }
@@ -443,10 +491,31 @@ void GameManager::update(){
             enemyState = EnemyState::IDLE;
             hasPlayerKilledEnemy = false;
         }
+        if (menuDeathScreenButton->isPressed){
+            this->state = GAME_MENU;
+        }
+    }
+    else if (this->state == GAME_MENU){
+        *currentScore = 0;
+        if (playMenuScreenButton->isPressed){
+            this->state = GAME_ACTIVE;
+            enemyState = EnemyState::IDLE;
+            hasPlayerKilledEnemy = false;
+        }
+        if (quitMenuScreenButton->isPressed){
+            this->quitProgram = true;
+        }
     }
 }
 
 void GameManager::processInputs(){
+    playMenuScreenButton->init();
+    quitMenuScreenButton->init();
+
+    menuDeathScreenButton->init();
+    restartDeathScreenButton->init();
+    quitDeathScreenButton->init();
+
     // when the game scene is on game active
     if (this->state == GAME_ACTIVE){
         // this check if the player makes contact with the ground
@@ -513,6 +582,10 @@ void GameManager::processInputs(){
         quitDeathScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
         restartDeathScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
     }
+    else if (this->state == GAME_MENU){
+        playMenuScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+        quitMenuScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+    }
 }
 
 void GameManager::render(){
@@ -532,9 +605,7 @@ void GameManager::render(){
         object->draw(*renderer, -1, 0);
 
         // render score
-        std::stringstream tempBuffer;
-        tempBuffer << *currentScore;
-        scoreText->draw(*renderer, "SCORE: "+(tempBuffer.str()));
+        scoreText->draw(*renderer, "SCORE: "+std::to_string(*currentScore));
 
         // render object trigger
         boxTrigger->draw(*renderer, -1, 0);
@@ -570,23 +641,12 @@ void GameManager::render(){
         deathScreenText->draw(*renderer, -1, 0);
 
         if (*currentScore > *highScore){
-            // convert the highscore int to string and rendering it
-            std::stringstream tempBuffer;
-            tempBuffer << *currentScore;
-            deathScreenHighScoreString = "HIGHSCORE: "+tempBuffer.str();
-            deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
-
             // updating the new highscore
             *highScore = *currentScore;
         }
-        else {
-            // convert the highscore int to string and rendering it
-            std::stringstream tempBuffer;
-            tempBuffer << *highScore;
-            deathScreenHighScoreString = "HIGHSCORE: "+tempBuffer.str();
-            deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
-        }
-
+        
+        deathScreenHighScoreString = "HIGHSCORE: "+std::to_string(*highScore);
+        deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
 
 
         if (menuDeathScreenButton->isHover && !menuDeathScreenButton->isPressed){
@@ -613,10 +673,34 @@ void GameManager::render(){
             restartDeathScreenButton->draw(*renderer, 1, 0);
         }
         else if (!restartDeathScreenButton->isHover && restartDeathScreenButton->isPressed){
-            restartDeathScreenButton->draw(*renderer, 2, 0);
-        }
+            restartDeathScreenButton->draw(*renderer, 2, 0);        }
         else {
             restartDeathScreenButton->draw(*renderer, 0, 0);
         }
+    }
+    else if (this->state == GAME_MENU){
+        enemyMenu->draw(*renderer, -1, 0);
+        playerMenu->draw(*renderer, -1, 0);
+        logo->draw(*renderer, -1, 0);
+
+        if (quitMenuScreenButton->isHover && !quitMenuScreenButton->isPressed){
+            quitMenuScreenButton->draw(*renderer, 1, 0);
+        }
+        else if (!quitMenuScreenButton->isHover && quitMenuScreenButton->isPressed){
+            quitMenuScreenButton->draw(*renderer, 2, 0);
+        }
+        else {
+            quitMenuScreenButton->draw(*renderer, 0, 0);
+        }
+
+        if (playMenuScreenButton->isHover && !playMenuScreenButton->isPressed){
+            playMenuScreenButton->draw(*renderer, 1, 0);
+        }
+        else if (!playMenuScreenButton->isHover && playMenuScreenButton->isPressed){
+            playMenuScreenButton->draw(*renderer, 2, 0);
+        }
+        else {
+            playMenuScreenButton->draw(*renderer, 0, 0);
+        }   
     }
 }
