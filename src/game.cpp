@@ -30,6 +30,7 @@ Button* quitDeathScreenButton;
 Button* restartDeathScreenButton; 
 
 Text* scoreText;
+Text* deathScreenHighScore;
 
 // enumerator for enemy state
 enum EnemyState {
@@ -67,10 +68,13 @@ std::ifstream inHighScoreFile;
 std::stringstream highScoreBuffer;
 std::string getterHighScoreString;
 
-// current score
+// integers for the scores
 int temp = 0;
 int* currentScore = &(temp); 
 int* highScore = new int;
+
+// rendering the highscore on the death scree
+std::string deathScreenHighScoreString;
 
 // Sets all public attributes to something
 GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), state(GAME_ACTIVE), quitProgram(false){
@@ -106,17 +110,30 @@ GameManager::~GameManager(){
 
     // deleting text
     delete scoreText;
-
-    std::cout << *currentScore << std::endl;
-    std::cout << *highScore << std::endl;
+    delete deathScreenHighScore;
     
+    // get score and close scoreFile
     if (*currentScore > *highScore){
-        // get score and close scoreFile
         outHighScoreFile.open("save/score.txt", std::ios::out | std::ios::trunc);
 
         if (outHighScoreFile.is_open()){
             outHighScoreFile << *currentScore;
             
+            // if is fail print an error
+            if (outHighScoreFile.fail()){
+                std::cout << "Error" << std::endl;
+            }
+        }
+
+        outHighScoreFile.close();
+    }
+    else {
+        outHighScoreFile.open("save/score.txt", std::ios::out | std::ios::trunc);
+
+        if (outHighScoreFile.is_open()){
+            outHighScoreFile << *highScore;
+            
+            // if is fail print an error
             if (outHighScoreFile.fail()){
                 std::cout << "Error" << std::endl;
             }
@@ -251,6 +268,9 @@ void GameManager::init(){
 
     // creating the score text
     scoreText = new Text(glm::vec2(0, 0), glm::vec2(30));
+
+    // creating the death screen high score text
+    deathScreenHighScore = new Text(glm::vec2 ((this->width / 2) - 175, 150), glm::vec2(30));
 
     // loading highscore from file and setting it to high score
     inHighScoreFile.open("save/score.txt");
@@ -548,6 +568,26 @@ void GameManager::render(){
     }
     else if (this->state == GAME_DEATH){
         deathScreenText->draw(*renderer, -1, 0);
+
+        if (*currentScore > *highScore){
+            // convert the highscore int to string and rendering it
+            std::stringstream tempBuffer;
+            tempBuffer << *currentScore;
+            deathScreenHighScoreString = "HIGHSCORE: "+tempBuffer.str();
+            deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
+
+            // updating the new highscore
+            *highScore = *currentScore;
+        }
+        else {
+            // convert the highscore int to string and rendering it
+            std::stringstream tempBuffer;
+            tempBuffer << *highScore;
+            deathScreenHighScoreString = "HIGHSCORE: "+tempBuffer.str();
+            deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
+        }
+
+
 
         if (menuDeathScreenButton->isHover && !menuDeathScreenButton->isPressed){
             menuDeathScreenButton->draw(*renderer, 1, 0);
