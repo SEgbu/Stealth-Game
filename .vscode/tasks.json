@@ -22,6 +22,8 @@
 				"${workspaceFolder}\\src\\box2d_src\\rope\\*.cpp",
 				// Other commands
 				"-lglfw3dll",
+				"-lSDL2_mixer",
+				"-lSDL2",
 				"-o",
 				"${workspaceFolder}\\main.exe"
 			],

@@ -6,6 +6,11 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
+// SDL2 Libraries 
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+
 // Classes
 #include <game.hpp>
 #include <resources.hpp>
@@ -35,7 +40,7 @@ void processInput(GLFWwindow* window);
 // The game manager
 GameManager stealth(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-int main(){ 
+int main(int argc, char* args[]){ 
     // Initializing GLFW
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -54,6 +59,16 @@ int main(){
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){ // Gets address of the function from this context
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
+    }
+
+    // Initializing SDL 
+    if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0) {
+        std::cout << "SDL could not initialize! SDL Error: " << SDL_GetError() << std::endl;
+    }
+
+    // Initializing SDL_mixer
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << SDL_GetError() << std::endl;
     }
 
     // Set the size of the rendering viewport
@@ -115,6 +130,9 @@ int main(){
 
     ResourceManager::clear(); // clear resources
     glfwTerminate(); // End program
+    
+    Mix_Quit();
+    SDL_Quit();
     return 0;
 }
 

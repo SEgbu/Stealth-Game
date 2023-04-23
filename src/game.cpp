@@ -5,10 +5,14 @@
 #include <button.hpp>
 #include <text.hpp>
 #include <string>
-
+#include <SDL2/SDL_mixer.h>
 
 // The game renderer
 SpriteRenderer* renderer;
+
+// Music variables
+Mix_Music* mainGame; 
+Mix_Music* menuGame;
 
 // The objects
 GameObject* player;
@@ -48,6 +52,9 @@ EnemyState enemyState = IDLE;
 
 // player crouching boolean
 bool isPlayerCrouching = false;
+
+// a boolean which checks if music is playing 
+bool isMusicPlaying = false;
 
 // player trigger size change boolean
 bool isPlayerTriggerSizeChanged = false;
@@ -93,6 +100,13 @@ GameManager::GameManager(unsigned int w, unsigned int h) : width(w), height(h), 
 GameManager::~GameManager(){
     // deleting render 
     delete renderer;
+
+    // clearing the music variables
+    Mix_FreeMusic(mainGame);
+    mainGame = NULL;
+
+    Mix_FreeMusic(menuGame);
+    menuGame = NULL;
     
     // deleting game objects
     delete player;
@@ -166,6 +180,17 @@ void GameManager::init(){
 
         // setting up projection matrix for the player viewing the game 
         glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+
+        // setting up the music variables 
+        mainGame = Mix_LoadMUS("assets/stealth game main game.wav");
+        if (mainGame == nullptr){
+            std::cout << "Failed to load the main game music, SDL mixer error: " << Mix_GetError() << std::endl;
+        }
+
+        menuGame = Mix_LoadMUS("assets/stealth game menu.wav");
+        if (menuGame == nullptr){
+            std::cout << "Failed to load the menu game music, SDL mixer error: " << Mix_GetError() << std::endl;
+        }
 
         // setting some uniforms in the vertex or frag shader
         ResourceManager::getShader("sprite").use().setInteger("myTexture", 0);
@@ -350,6 +375,11 @@ void GameManager::init(){
 
 void GameManager::update(){
     if (this->state == GAME_ACTIVE){
+        if (!isMusicPlaying){        
+            Mix_PlayMusic(mainGame, -1);
+            isMusicPlaying = true;
+        }
+
         // physics process per second
         float timeStep = 1.0f / 60.0f;
 
@@ -481,6 +511,9 @@ void GameManager::update(){
         object->physicsBody->GetWorld()->Step(timeStep, velIterations, posIterations);
     }
     else if (this->state == GAME_DEATH){
+        Mix_HaltMusic();
+        isMusicPlaying = false;
+
         *currentScore = 0;
         if (quitDeathScreenButton->isPressed){
             this->quitProgram = true;
@@ -496,14 +529,20 @@ void GameManager::update(){
         }
     }
     else if (this->state == GAME_MENU){
+        if (!isMusicPlaying){
+            Mix_PlayMusic(menuGame, -1);
+            isMusicPlaying = true;
+        }        
         *currentScore = 0;
         if (playMenuScreenButton->isPressed){
             this->state = GAME_ACTIVE;
             enemyState = EnemyState::IDLE;
             hasPlayerKilledEnemy = false;
+            isMusicPlaying = false;
         }
         if (quitMenuScreenButton->isPressed){
             this->quitProgram = true;
+            isMusicPlaying = false;
         }
     }
 }
