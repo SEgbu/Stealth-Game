@@ -45,5 +45,4 @@ void GameObject::draw(SpriteRenderer &renderer, int texIndex, int zIndex){
         renderer.drawSprite(this->sprite, glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), zIndex, this->size, this->rotation, this->colour);       
     else
         renderer.drawSprite(this->spriteVector[texIndex], glm::vec2(physicsBody->GetPosition().x - offsetX, physicsBody->GetPosition().y - offsetY), zIndex, this->size, this->rotation, this->colour);
-    
 }

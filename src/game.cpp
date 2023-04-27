@@ -25,18 +25,24 @@ Trigger* enemyBack;
 Trigger* playerTrigger;
 Trigger* enemyJumpTrigger;
 Trigger* boxTrigger;
+Trigger* diamond;
 
 NonCollidableObject* exclamationMark;
 NonCollidableObject* deathScreenText;
 NonCollidableObject* logo;
 NonCollidableObject* playerMenu;
 NonCollidableObject* enemyMenu;
+NonCollidableObject* winScreenText;
 
 Button* menuDeathScreenButton;
 Button* quitDeathScreenButton;
 Button* restartDeathScreenButton; 
+
 Button* playMenuScreenButton;
 Button* quitMenuScreenButton;
+
+Button* menuWinScreenButton;
+Button* quitWinScreenButton;
 
 Text* scoreText;
 Text* deathScreenHighScore;
@@ -120,6 +126,7 @@ GameManager::~GameManager(){
     delete playerTrigger;
     delete enemyJumpTrigger;
     delete boxTrigger;
+    delete diamond;
 
     // deleting images
     delete exclamationMark;
@@ -238,6 +245,9 @@ void GameManager::init(){
         // loading and generating the death screen text texture
         ResourceManager::loadTexture("assets/you died.png", true, "deathScreenText");
 
+        // loading and generating the diamond texture
+        ResourceManager::loadTexture("assets/diamond.png", true, "diamond");
+
         // loading and generating the button textures
         ResourceManager::loadTexture("assets/menuIdleDeathScreenButton.png", true, "menuDeathButtonIdle");
         ResourceManager::loadTexture("assets/menuHoverDeathScreenButton.png", true, "menuDeathButtonHover");
@@ -259,6 +269,9 @@ void GameManager::init(){
         ResourceManager::loadTexture("assets/guardMenu.png", true, "enemyMenuImage");
         ResourceManager::loadTexture("assets/playerMenu.png", true, "playerMenuImage");
         ResourceManager::loadTexture("assets/gameLogo.png", true, "gameLogoImage");
+
+        // loading and generating win screen text image
+        ResourceManager::loadTexture("assets/youWin.png", true, "winScreenText");
 
     }
 
@@ -369,6 +382,16 @@ void GameManager::init(){
     playMenuScreenButton->init();
     quitMenuScreenButton->init();
 
+    // Creating the diamond object 
+    diamond = new Trigger(glm::vec2(640, 480), glm::vec2(35, 35), ResourceManager::getTexture("diamond"));
+
+    // Creating the win screen text
+    winScreenText = new NonCollidableObject(glm::vec2(this->width / 2 - 200, 50), glm::vec2(300, 100), ResourceManager::getTexture("winScreenText"));
+
+    // Creating the win screen buttons 
+    menuWinScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 220), glm::vec2(200, 113), menuDeathButtonTextures);
+    quitWinScreenButton = new Button(glm::vec2((this->width / 2) - (200 / 2), 480), glm::vec2(200, 113), quitDeathButtonTextures);
+
     // set time to zero 
     glfwSetTime(time);
 }
@@ -421,6 +444,14 @@ void GameManager::update(){
 
         if (player->physicsBody->GetPosition().y > this->height + 20){
             this->state = GAME_DEATH;
+        }
+
+        // diamond float
+        diamond->position.y = 480 + 15*sin(2*glfwGetTime());
+
+        // winning the game 
+        if (diamond->isTriggerIntersecting(playerTrigger)){
+            this->state = GAME_WIN;
         }
 
         // enemy idle state
@@ -532,7 +563,8 @@ void GameManager::update(){
         if (!isMusicPlaying){
             Mix_PlayMusic(menuGame, -1);
             isMusicPlaying = true;
-        }        
+        }      
+
         *currentScore = 0;
         if (playMenuScreenButton->isPressed){
             this->state = GAME_ACTIVE;
@@ -541,6 +573,22 @@ void GameManager::update(){
             isMusicPlaying = false;
         }
         if (quitMenuScreenButton->isPressed){
+            this->quitProgram = true;
+            isMusicPlaying = false;
+        }
+    }
+    else if (this->state == GAME_WIN){
+        Mix_HaltMusic();
+        isMusicPlaying = false;
+
+        if (menuWinScreenButton->isPressed){
+            this->init();
+            playMenuScreenButton->isPressed = false;
+            quitMenuScreenButton->isPressed = false;
+            this->state = GAME_MENU;
+            this->quitProgram = false;
+        }
+        if (quitWinScreenButton->isPressed){
             this->quitProgram = true;
             isMusicPlaying = false;
         }
@@ -554,6 +602,9 @@ void GameManager::processInputs(){
     menuDeathScreenButton->init();
     restartDeathScreenButton->init();
     quitDeathScreenButton->init();
+
+    menuWinScreenButton->init();
+    quitWinScreenButton->init();
 
     // when the game scene is on game active
     if (this->state == GAME_ACTIVE){
@@ -625,9 +676,15 @@ void GameManager::processInputs(){
         playMenuScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
         quitMenuScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
     }
+    else if (this->state == GAME_WIN){
+        menuWinScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+        quitWinScreenButton->eventHandler(this->mousePos.xPos, this->mousePos.yPos, this->leftClick);
+    }
 }
 
 void GameManager::render(){
+    deathScreenHighScoreString = "HIGHSCORE: "+std::to_string(*highScore);
+
     if (this->state == GAME_ACTIVE){
         // render ground
         ground->draw(*renderer, -1, 0);
@@ -646,8 +703,8 @@ void GameManager::render(){
         // render score
         scoreText->draw(*renderer, "SCORE: "+std::to_string(*currentScore));
 
-        // render object trigger
-        boxTrigger->draw(*renderer, -1, 0);
+        // rendering the diamond trigger
+        diamond->draw(*renderer, -1, 0);
 
         // is the enemy hasn't been murdered
         if (!hasPlayerKilledEnemy){
@@ -684,7 +741,6 @@ void GameManager::render(){
             *highScore = *currentScore;
         }
         
-        deathScreenHighScoreString = "HIGHSCORE: "+std::to_string(*highScore);
         deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
 
 
@@ -740,6 +796,31 @@ void GameManager::render(){
         }
         else {
             playMenuScreenButton->draw(*renderer, 0, 0);
+        }   
+    }
+    else if (this->state == GAME_WIN){
+        deathScreenHighScore->draw(*renderer, deathScreenHighScoreString);
+        
+        winScreenText->draw(*renderer, -1, 0);
+
+        if (quitWinScreenButton->isHover && !quitWinScreenButton->isPressed){
+            quitWinScreenButton->draw(*renderer, 1, 0);
+        }
+        else if (!quitWinScreenButton->isHover && quitWinScreenButton->isPressed){
+            quitWinScreenButton->draw(*renderer, 2, 0);
+        }
+        else {
+            quitWinScreenButton->draw(*renderer, 0, 0);
+        }   
+
+        if (menuWinScreenButton->isHover && !menuWinScreenButton->isPressed){
+            menuWinScreenButton->draw(*renderer, 1, 0);
+        }
+        else if (!menuWinScreenButton->isHover && menuWinScreenButton->isPressed){
+            menuWinScreenButton->draw(*renderer, 2, 0);
+        }
+        else {
+            menuWinScreenButton->draw(*renderer, 0, 0);
         }   
     }
 }
