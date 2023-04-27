@@ -82,6 +82,12 @@ int main(int argc, char* args[]){
 
     // Track cursor position using GLFW
     glfwSetCursorPosCallback(window, cursor_position_callback);
+
+    // Setting the window icon
+    GLFWimage images[1];
+    images[0].pixels = stbi_load("assets/player.png", &images[0].width, &images[0].height, 0, 4);
+    glfwSetWindowIcon(window, 1, images);
+    stbi_image_free(images[0].pixels);
     
     // initialize game manager
     stealth.init();
