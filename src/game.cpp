@@ -206,7 +206,7 @@ void GameManager::init(){
         // setting up the game renderer
         renderer = new SpriteRenderer(ResourceManager::getShader("sprite").use());
 
-        // loding and generating the player texture
+        // loading and generating the player texture
         ResourceManager::loadTexture("assets/player.png", true, "player");
 
         // loading and generating the player crouch texture
@@ -729,7 +729,6 @@ void GameManager::render(){
                 if (!hasPlayerKilledEnemy){
                     exclamationMark->draw(*renderer, -1, 0);
                 }
-                enemyBack->draw(*renderer, -1, 0);
             }     
         }
     }
